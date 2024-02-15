@@ -1,0 +1,34 @@
+name: unit_test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: build test against clang
+        run: |
+            clang --version
+            sudo apt-get install libc++-dev
+            make clang_test_build
+
+      - name: build test against gcc
+        run: |
+            gcc --version
+            make gcc_test_build
+
+      - name: test against clang
+        run: |
+            clang --version
+            make clang_test_run
+
+      - name: test against gcc
+        run: |
+            gcc --version
+            make gcc_test_run
