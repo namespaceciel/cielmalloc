@@ -3,6 +3,7 @@
 
 #include <ciel/config.h>
 #include <ciel/message_queue.h>
+#include <ciel/remote_request.h>
 #include <ciel/sizeclass.h>
 #include <ciel/span.h>
 
@@ -10,9 +11,6 @@
 #include <utility>
 
 NAMESPACE_CIEL_BEGIN
-
-static constexpr size_t radix_bits = 6;
-static constexpr size_t radix_buckets = 1 << radix_bits;
 
 // A simple bidirectional list with both head and tail stored inside,
 // so that we can eject one node before head or after tail.
@@ -37,18 +35,15 @@ public:
     CIEL_NODISCARD bool empty() const noexcept;
 
 private:
-    friend struct thread_allocator;
+    friend class thread_allocator;
 
     span* head_{nullptr};
     span* tail_{nullptr};
 
 };  // class span_list
 
-struct remote_request {
-    void* ptr;
-    size_t hops{0};
-
-};  // struct remote_request
+static constexpr size_t radix_bits = 6;
+static constexpr size_t radix_buckets = 1 << radix_bits;
 
 class thread_allocator {
 public:
@@ -62,15 +57,18 @@ public:
     thread_allocator& operator=(const thread_allocator&) = delete;
 
 private:
+    friend class remote_request_list;
+
     thread_allocator() noexcept = default;
+
+    void process_message_queue() noexcept;
 
     span_list freelist_[FreelistNum]{};
 
     // Inspired by radix tree from snmalloc,
     // we hash the low 6 bits of every block's belonged thread_allocator's address.
     // When remote_requests_nums_ goes beyond threshold, send the whole list to their message_queue_.
-    remote_request* remote_requests_[radix_buckets]{};
-    std::atomic<size_t> remote_requests_nums_[radix_buckets]{};
+    remote_request_list remote_requests_[radix_buckets]{};
 
     message_queue message_queue_;
 

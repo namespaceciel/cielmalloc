@@ -15,6 +15,8 @@ add_library(cielmalloc STATIC
         src/sizeclass.cpp
         src/headquarter_alloc.cpp
         src/system.cpp
+        src/remote_request.cpp
+        src/config.cpp
 )
 
 target_include_directories(cielmalloc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

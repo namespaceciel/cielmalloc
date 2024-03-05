@@ -2,6 +2,7 @@
 #define CIELMALLOC_INCLUDE_CIEL_MESSAGE_QUEUE_H_
 
 #include <ciel/config.h>
+#include <ciel/remote_request.h>
 #include <ciel/system.h>
 
 #include <atomic>
@@ -13,7 +14,7 @@ NAMESPACE_CIEL_BEGIN
 //
 class message_queue {
 public:
-    void* dequeue() noexcept;
+    CIEL_NODISCARD void* dequeue() noexcept;
 
     // enqueue only modifies end_ and is accessed by multiple threads.
     void enqueue(void*, void*) noexcept;

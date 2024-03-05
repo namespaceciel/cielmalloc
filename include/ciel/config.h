@@ -7,6 +7,11 @@
 
 #include <cassert>
 
+// exception
+#ifdef __cpp_exceptions
+#define CIEL_HAS_EXCEPTIONS
+#endif
+
 // standard_version
 #if __cplusplus <= 201103L
 #define CIEL_STD_VER 11
@@ -72,12 +77,16 @@
 
 NAMESPACE_CIEL_BEGIN
 
-[[noreturn]] inline void unreachable() noexcept {
-#if defined(_MSC_VER) && !defined(__clang__)    // MSVC
-    __assume(false);
+[[noreturn]] inline void unreachable() noexcept;
 
-#else    // GCC, Clang
-    __builtin_unreachable();
+template<class Exception>
+[[noreturn]] inline void THROW(Exception&& e) {
+#ifdef CIEL_HAS_EXCEPTIONS
+    throw e;
+
+#else
+    std::cerr << e.what() << "\n";
+    std::terminate();
 #endif
 }
 

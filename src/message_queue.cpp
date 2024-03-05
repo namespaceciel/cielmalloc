@@ -2,7 +2,7 @@
 
 NAMESPACE_CIEL_BEGIN
 
-void* message_queue::dequeue() noexcept {
+CIEL_NODISCARD void* message_queue::dequeue() noexcept {
     // Only if size > 1 can it dequeue.
     if (ptr_next(begin_) == nullptr) {
         return nullptr;

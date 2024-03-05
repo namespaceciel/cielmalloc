@@ -5,7 +5,7 @@ NAMESPACE_CIEL_BEGIN
 
 // span_list
 span_list::~span_list() {
-    CIEL_PRECONDITION(empty());
+    CIEL_PRECONDITION(empty());     // TODO: Is this assertion necessary?
 }
 
 void span_list::push_before_head(span* ptr) noexcept {
@@ -147,12 +147,61 @@ void thread_allocator::deallocate(void* ptr) noexcept {
     }
 
     // Belongs to another allocator
-    // TODO
+    const size_t remote_requests_index = (uintptr_t)s->belong_to_ % radix_buckets;
+
+    CIEL_PRECONDITION(remote_requests_index < radix_buckets);
+
+    hops_num(ptr) = 0;
+    remote_requests_[remote_requests_index].push_before_head(ptr);
 }
 
 CIEL_NODISCARD thread_allocator& thread_allocator::get_instance() noexcept {
     static thread_local thread_allocator alloc;
     return alloc;
+}
+
+void thread_allocator::process_message_queue() noexcept {
+    void* request = nullptr;
+
+    while ((request = message_queue_.dequeue()) != nullptr) {
+        // We can just call deallocate(request), but if request need more jumps,
+        // we can separate them using higher 6 bits hash.
+
+        span* s = get_span(request);
+
+        CIEL_PRECONDITION(s->magic_number_ == MagicNumber);
+
+        const size_t sizeclass = size_to_sizeclass(s->obj_size_);
+        span_list& freelist_at_sizeclass = freelist_[sizeclass];
+
+        if (s->belong_to_ == this) {
+            switch (s->deallocate(request)) {
+                case span::DeallocatedResult::BackFromZero : {
+                    freelist_at_sizeclass.push_before_head(freelist_at_sizeclass.eject(s));
+                    break;
+                }
+                case span::DeallocatedResult::BackToOnePiece : {
+                    CIEL_UNUSED(freelist_at_sizeclass.eject(s));
+                    headquarter_allocator::get_instance().deallocate(s);
+                    break;
+                }
+                case span::DeallocatedResult::None :
+                    break;
+            }
+
+            return;
+        }
+
+        // Belongs to another allocator
+        size_t& hn = hops_num(request);
+        const size_t remote_requests_index = (uintptr_t)s->belong_to_ % ((radix_buckets & (0b111111 << (6 << hn))) >> (6 << hn));
+
+        ++hn;
+
+        CIEL_PRECONDITION(remote_requests_index < radix_buckets);
+
+        remote_requests_[remote_requests_index].push_before_head(request);
+    }
 }
 
 NAMESPACE_CIEL_END

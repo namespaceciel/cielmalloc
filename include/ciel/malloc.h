@@ -3,9 +3,19 @@
 
 #include <ciel/config.h>
 
+#include <cstddef>
+
+CIEL_NODISCARD void* operator new(size_t);
+
+CIEL_NODISCARD void* operator new[](size_t);
+
+void operator delete(void*) noexcept;
+
+void operator delete[](void*) noexcept;
+
 NAMESPACE_CIEL_BEGIN
 
-void* malloc(const size_t size) noexcept;
+CIEL_NODISCARD void* malloc(const size_t) noexcept;
 
 void free(void* ptr) noexcept;
 

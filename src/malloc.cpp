@@ -1,9 +1,47 @@
 #include <ciel/malloc.h>
 #include <ciel/thread_alloc.h>
 
+#include <new>
+
+CIEL_NODISCARD void* operator new(size_t size) {
+    if CIEL_UNLIKELY(size == 0) {
+        ++size;
+    }
+
+    void* ptr = ciel::malloc(size);
+
+    if CIEL_UNLIKELY(ptr == nullptr) {
+        ciel::THROW(std::bad_alloc{});
+    }
+
+    return ptr;
+}
+
+CIEL_NODISCARD void* operator new[](size_t size) {
+    if CIEL_UNLIKELY(size == 0) {
+        ++size;
+    }
+
+    void* ptr = ciel::malloc(size);
+
+    if CIEL_UNLIKELY(ptr == nullptr) {
+        ciel::THROW(std::bad_alloc{});
+    }
+
+    return ptr;
+}
+
+void operator delete(void* ptr) noexcept {
+    ciel::free(ptr);
+}
+
+void operator delete[](void* ptr) noexcept {
+    ciel::free(ptr);
+}
+
 NAMESPACE_CIEL_BEGIN
 
-void* malloc(const size_t size) noexcept {
+CIEL_NODISCARD void* malloc(const size_t size) noexcept {
     if (size == 0) {
         return nullptr;
     }
