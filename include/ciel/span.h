@@ -4,11 +4,12 @@
 #include <ciel/config.h>
 #include <ciel/system.h>
 
+#include <atomic>
 #include <utility>
 
 NAMESPACE_CIEL_BEGIN
 
-class thread_allocator;
+class thread_allocator_core;
 
 // Each span represents a memory block of 64KB in both size and alignment,
 // and some metadata is on top, so that every block can find out which span is its owner
@@ -20,7 +21,7 @@ struct span {
     // Magic number to indicate that this span is allocated by CielMalloc.
     size_t magic_number_;
     // thread_allocator it belongs to.
-    thread_allocator* belong_to_;
+    thread_allocator_core* belong_to_;
     // When it becomes 0 again, this span is already a whole block and can be recycled.
     size_t allocated_num_;
     // Each span contains the same size objects.
@@ -43,7 +44,7 @@ struct span {
 
     };  // enum class DeallocatedResult
 
-    void init(const size_t, thread_allocator*) noexcept;
+    void init(const size_t, thread_allocator_core*) noexcept;
 
     CIEL_NODISCARD void* allocate() noexcept;
 
@@ -51,6 +52,11 @@ struct span {
     CIEL_NODISCARD bool empty() const noexcept;
 
     CIEL_NODISCARD DeallocatedResult deallocate(void*) noexcept;
+
+    // This is a callback when thread died.
+    // Since it won't use free_ blocks anymore, we just decrement the allocated_num_,
+    // and when it returns to zero, pass this span to headquarter_allocator.
+    void deallocate_after_thread_died() noexcept;
 
 };  // struct span
 

@@ -2,13 +2,13 @@
 #define CIELMALLOC_INCLUDE_CIEL_THREAD_ALLOC_H_
 
 #include <ciel/config.h>
-#include <ciel/message_queue.h>
+#include <ciel/headquarter_alloc.h>
 #include <ciel/remote_request.h>
 #include <ciel/sizeclass.h>
 #include <ciel/span.h>
+#include <ciel/thread_alloc_core.h>
 
 #include <atomic>
-#include <utility>
 
 NAMESPACE_CIEL_BEGIN
 
@@ -21,8 +21,6 @@ public:
 
     span_list(const span_list&) = delete;
     span_list& operator=(const span_list&) = delete;
-
-    ~span_list();
 
     void push_before_head(span* ptr) noexcept;
 
@@ -53,13 +51,17 @@ public:
 
     CIEL_NODISCARD static thread_allocator& get_instance() noexcept;
 
+    ~thread_allocator();
+
     thread_allocator(const thread_allocator&) = delete;
     thread_allocator& operator=(const thread_allocator&) = delete;
 
 private:
     friend class remote_request_list;
 
-    thread_allocator() noexcept = default;
+    thread_allocator() noexcept {
+        ++threads_num_;
+    }
 
     void process_message_queue() noexcept;
 
@@ -70,7 +72,9 @@ private:
     // When remote_requests_nums_ goes beyond threshold, send the whole list to their message_queue_.
     remote_request_list remote_requests_[radix_buckets]{};
 
-    message_queue message_queue_;
+    thread_allocator_core* const bound_core_{headquarter_allocator::get_instance().get_core()};
+
+    static std::atomic<size_t> threads_num_;
 
 };  // class thread_allocator
 

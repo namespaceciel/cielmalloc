@@ -73,7 +73,7 @@
 #endif
 
 // unused
-#define CIEL_UNUSED(x) (void)(x)
+#define CIEL_UNUSED(x) static_cast<void>(x)
 
 NAMESPACE_CIEL_BEGIN
 

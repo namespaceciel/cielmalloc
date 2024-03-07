@@ -19,11 +19,15 @@ public:
     // enqueue only modifies end_ and is accessed by multiple threads.
     void enqueue(void*, void*) noexcept;
 
+    // Reset dummy_head_ to be both begin_ and end_, to free the stuck begin_ node.
+    // Should be called after dequeue() == nullptr.
+    void clear() noexcept;
+
 private:
-    std::atomic<void*> begin_{&dummy_head_};
-    std::atomic<void*> end_{&dummy_head_};
     // Dummy-head, this message queue is always not-empty.
     void* dummy_head_{nullptr};
+    std::atomic<void*> begin_{&dummy_head_};
+    std::atomic<void*> end_{&dummy_head_};
 
 };  // class message_queue
 

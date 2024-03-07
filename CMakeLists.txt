@@ -17,6 +17,7 @@ add_library(cielmalloc STATIC
         src/system.cpp
         src/remote_request.cpp
         src/config.cpp
+        src/thread_alloc_core.cpp
 )
 
 target_include_directories(cielmalloc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

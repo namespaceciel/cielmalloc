@@ -1,15 +1,16 @@
+#include <ciel/headquarter_alloc.h>
 #include <ciel/sizeclass.h>
 #include <ciel/span.h>
 
 NAMESPACE_CIEL_BEGIN
 
-void span::init(const size_t obj_size, thread_allocator* ta) noexcept {
+void span::init(const size_t obj_size, thread_allocator_core* tac) noexcept {
     CIEL_PRECONDITION(is_aligned(this, 1 << PAGE_SHIFT));
     CIEL_PRECONDITION(obj_size % size_to_alignment(obj_size) == 0);
 
     magic_number_ = MagicNumber;
 
-    belong_to_ = ta;
+    belong_to_ = tac;
 
     allocated_num_ = 0;
     obj_size_ = obj_size;
@@ -71,6 +72,12 @@ CIEL_NODISCARD span::DeallocatedResult span::deallocate(void* ptr) noexcept {
     }
 
     return back_from_zero ? DeallocatedResult::BackFromZero : DeallocatedResult::None;
+}
+
+void span::deallocate_after_thread_died() noexcept {
+    if (--allocated_num_ == 0) {
+        headquarter_allocator::get_instance().deallocate(this);
+    }
 }
 
 CIEL_NODISCARD span* get_span(void* ptr) noexcept {

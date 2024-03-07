@@ -25,6 +25,8 @@ public:
     void send_to_message_queue(message_queue&) noexcept;
 
 private:
+    friend class thread_allocator;
+
     static constexpr size_t RequestsSendingThreshold = 32;
 
     void* head_{nullptr};

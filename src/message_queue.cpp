@@ -15,15 +15,26 @@ CIEL_NODISCARD void* message_queue::dequeue() noexcept {
 
     void* first = begin_;
     begin_ = ptr_next(begin_);
-    // TODO: Acquire fence
+
     return first;
 }
 
 void message_queue::enqueue(void* first, void* last) noexcept {
     ptr_next(last) = nullptr;
-    // TODO: Release fence
+
     void* prev = end_.exchange(last);
+
     ptr_next(prev) = first;
+}
+
+void message_queue::clear() noexcept {
+    CIEL_PRECONDITION(dequeue() == nullptr);
+
+    if (begin_ == &dummy_head_) {
+        return;
+    }
+
+    enqueue(&dummy_head_, &dummy_head_);
 }
 
 NAMESPACE_CIEL_END

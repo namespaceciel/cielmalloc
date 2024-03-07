@@ -6,7 +6,7 @@
 NAMESPACE_CIEL_BEGIN
 
 remote_request_list::~remote_request_list() {
-    CIEL_PRECONDITION(num_ == 0);   // TODO: not implemented
+    CIEL_PRECONDITION(num_ == 0);
 }
 
 void remote_request_list::push_before_head(void* ptr) noexcept {
@@ -27,6 +27,9 @@ void remote_request_list::push_before_head(void* ptr) noexcept {
 }
 
 void remote_request_list::send_to_message_queue(message_queue& mq) noexcept {
+    CIEL_PRECONDITION(head_ != nullptr);
+    CIEL_PRECONDITION(tail_ != nullptr);
+
     mq.enqueue(head_, tail_);
 
     head_ = nullptr;
