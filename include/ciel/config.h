@@ -77,7 +77,7 @@
 inline void ciel_ignore_result(...) noexcept {}
 #define CIEL_UNUSED(x) ciel_ignore_result(x)
 #else
-#define CIEL_UNUSED(x) static_cast<void>(sizeof(x))
+#define CIEL_UNUSED(x) static_cast<void>(x)
 #endif
 
 NAMESPACE_CIEL_BEGIN
