@@ -33,7 +33,6 @@ public:
         pool<remote_allocator>::get().release(remote_alloc_);
     }
 
-    // TODO: Is meyer's singleton lock-free?
     CIEL_NODISCARD static thread_allocator& get() noexcept {
         static thread_local thread_allocator res;
         return res;
