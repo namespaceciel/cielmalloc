@@ -11,7 +11,7 @@
 
 TEST(large_alloc, single_thread) {
     constexpr size_t begin_size = cielmalloc::LargeThreshold;
-    constexpr size_t end_size   = 1 << 30;
+    constexpr size_t end_size   = cielmalloc::one_at_bit(30);
 
     for (size_t allocated_size = begin_size; allocated_size < end_size; allocated_size *= 1.3) {
         ciel::println("Large alloc: {} bytes...", allocated_size);

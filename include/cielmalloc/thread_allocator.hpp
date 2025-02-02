@@ -23,13 +23,13 @@ private:
 
     struct remote_cache {
         static constexpr size_t RemoteSlotBits = 6;
-        static constexpr size_t RemoteSlots    = 1 << RemoteSlotBits;
+        static constexpr size_t RemoteSlots    = cielmalloc::one_at_bit(RemoteSlotBits);
         static constexpr size_t RemoteMask     = RemoteSlots - 1;
 
 #ifdef CIEL_IS_DEBUGGING
         static constexpr size_t CacheSizeThreshold = 1;
 #else
-        static constexpr size_t CacheSizeThreshold = 1 << 20;
+        static constexpr size_t CacheSizeThreshold = cielmalloc::one_at_bit(20);
 #endif
 
         size_t size{0};
