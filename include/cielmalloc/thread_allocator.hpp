@@ -21,6 +21,75 @@ private:
     list<small_slab> small_slabs_headquarter_;
     remote_allocator* remote_alloc_;
 
+    struct remote_cache {
+        static constexpr size_t RemoteSlotBits = 6;
+        static constexpr size_t RemoteSlots    = 1 << RemoteSlotBits;
+        static constexpr size_t RemoteMask     = RemoteSlots - 1;
+
+#ifdef CIEL_IS_DEBUGGING
+        static constexpr size_t CacheSizeThreshold = 1;
+#else
+        static constexpr size_t CacheSizeThreshold = 1 << 20;
+#endif
+
+        size_t size{0};
+        remote_list remote_lists[RemoteSlots];
+
+        void enqueue(const uintptr_t target_id, void* p, const uint8_t sizeclass) noexcept {
+            size += cielmalloc::sizeclass_to_size(sizeclass);
+
+            remote* r = static_cast<remote*>(p);
+            r->set_sizeclass(sizeclass);
+            r->set_target_id(target_id);
+
+            remote_list& l = remote_lists[target_id & RemoteMask];
+            l.insert(r);
+        }
+
+        void post(const size_t my_id) noexcept {
+            size = 0;
+
+            size_t shift = 0;
+            while (true) {
+                const size_t my_slot_index = (my_id >> shift) & RemoteMask;
+                for (size_t i = 0; i < RemoteSlots; ++i) {
+                    if CIEL_UNLIKELY (i == my_slot_index) {
+                        continue;
+                    }
+
+                    remote_list& l = remote_lists[i];
+                    if (!l.empty()) {
+                        remote* last  = l.last;
+                        remote* first = l.clear();
+
+                        // TODO: It's UB since first could be medium_slab*,
+                        // but it wouldn't cause a problem since we only use the common Base part.
+                        slab_remote* slab = small_slab::get_slab(first);
+                        slab->remote_alloc()->message_queue.push(first, last);
+                    }
+                }
+
+                remote_list& my_slot = remote_lists[my_slot_index];
+                if (my_slot.empty()) {
+                    break;
+                }
+
+                remote* r = my_slot.clear();
+                shift += RemoteSlotBits;
+                while (r != nullptr) {
+                    const size_t slot_index = (r->target_id() >> shift) & RemoteMask;
+                    remote_list& l          = remote_lists[slot_index];
+                    l.insert(r); // Guarantee to not change r->non_atomic_next.
+
+                    r = r->non_atomic_next;
+                }
+            }
+        }
+
+    }; // struct remote_cache
+
+    remote_cache remote_caches;
+
     thread_allocator() noexcept
         : remote_alloc_(pool<remote_allocator>::get().acquire()) {}
 
@@ -28,8 +97,9 @@ public:
     thread_allocator(const thread_allocator&)            = delete;
     thread_allocator& operator=(const thread_allocator&) = delete;
 
-    // Give remote_alloc_ back to pool.
+    // Post all messages, give remote_alloc_ back to pool.
     ~thread_allocator() {
+        post<false>();
         pool<remote_allocator>::get().release(remote_alloc_);
     }
 
@@ -39,10 +109,6 @@ public:
     }
 
 private:
-    void handle_message_queue() noexcept {
-        // TODO
-    }
-
     CIEL_NODISCARD remote_allocator* remote_alloc() noexcept {
         return remote_alloc_;
     }
@@ -107,7 +173,7 @@ private:
         meta_slab* slab = meta_slab::get_meta_slab(p);
         small_slab* hq  = small_slab::get_slab(p);
         if (hq->remote_alloc() != remote_alloc()) {
-            // TODO
+            remote_dealloc(hq->remote_alloc(), p, slab->sizeclass());
         }
 
         if CIEL_UNLIKELY (slab->deallocate(p)) {
@@ -159,7 +225,7 @@ private:
 
         medium_slab* slab = medium_slab::get_slab(p);
         if (slab->remote_alloc() != remote_alloc()) {
-            // TODO
+            remote_dealloc(slab->remote_alloc(), p, slab->sizeclass());
         }
 
         if CIEL_UNLIKELY (slab->deallocate(p)) {
@@ -180,6 +246,48 @@ private:
 
     void large_dealloc(void* p, slab_kind kind) noexcept {
         global_alloc.deallocate(p, kind);
+    }
+
+    template<bool Conditional>
+    void post() noexcept {
+        if constexpr (Conditional) {
+            if CIEL_LIKELY (remote_caches.size < remote_cache::CacheSizeThreshold) {
+                return;
+            }
+        }
+
+        remote_caches.post(remote_alloc()->id());
+    }
+
+    void remote_dealloc(remote_allocator* target, void* p, uint8_t sizeclass) {
+        CIEL_ASSERT(target != remote_alloc());
+
+        remote_caches.enqueue(target->id(), p, sizeclass);
+
+        post<true>();
+    }
+
+    void handle_message_queue() noexcept {
+        remote_alloc()->message_queue.process([&](remote* r) {
+            const auto sizeclass = r->sizeclass();
+            CIEL_ASSERT(sizeclass <= NumSizeclasses);
+
+            if (r->target_id() == remote_alloc()->id()) {
+                if (sizeclass < NumSmallClasses) {
+                    small_dealloc(r);
+
+                } else {
+                    medium_dealloc(r);
+                }
+
+            } else {
+                remote_caches.enqueue(r->target_id(), r, sizeclass);
+            }
+
+            return true;
+        });
+
+        post<true>();
     }
 
 public:

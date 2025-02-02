@@ -23,7 +23,7 @@ struct remote {
 
     union {
         std::atomic<remote*> next;
-        remote* non_atomic_next;
+        remote* non_atomic_next{nullptr};
     };
 
     uintptr_t value;
@@ -31,11 +31,23 @@ struct remote {
     void set_target_id(const uintptr_t id) noexcept {
         CIEL_ASSERT(id == (id & TargetMask));
 
+        const auto old_sizeclass = sizeclass();
+        CIEL_UNUSED(old_sizeclass);
+
         value = (id & TargetMask) | (value & SizeclassMask);
+
+        CIEL_ASSERT(target_id() == id);
+        CIEL_ASSERT(sizeclass() == old_sizeclass);
     }
 
-    void set_sizeclass(const uint8_t sizeclass) noexcept {
-        value = (value & TargetMask) | ((static_cast<uintptr_t>(sizeclass) << SizeclassShift) & SizeclassMask);
+    void set_sizeclass(const uint8_t sc) noexcept {
+        const auto old_target_id = target_id();
+        CIEL_UNUSED(old_target_id);
+
+        value = (value & TargetMask) | ((static_cast<uintptr_t>(sc) << SizeclassShift) & SizeclassMask);
+
+        CIEL_ASSERT(sizeclass() == sc);
+        CIEL_ASSERT(target_id() == old_target_id);
     }
 
     uintptr_t target_id() noexcept {
@@ -47,6 +59,38 @@ struct remote {
     }
 
 }; // struct remote
+
+static_assert(sizeof(remote) <= MinAllocSize, "");
+
+struct remote_list {
+    remote dummy;         // first element: dummy.non_atomic_next
+    remote* last{&dummy}; // last element
+
+    void insert(remote* begin, remote* end) noexcept {
+        CIEL_ASSERT(last != nullptr);
+        CIEL_ASSERT(begin != nullptr);
+        CIEL_ASSERT(end != nullptr);
+
+        last->non_atomic_next = begin;
+        last                  = end;
+    }
+
+    void insert(remote* r) noexcept {
+        insert(r, r);
+    }
+
+    CIEL_NODISCARD remote* clear() noexcept {
+        last->non_atomic_next = nullptr;
+        remote* res           = dummy.non_atomic_next;
+        last                  = &dummy;
+        return res;
+    }
+
+    CIEL_NODISCARD bool empty() const noexcept {
+        return last == &dummy;
+    }
+
+}; // struct remote_list
 
 struct remote_allocator {
     std::atomic<remote_allocator*> next; // Used by pool.
