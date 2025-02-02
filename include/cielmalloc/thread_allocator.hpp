@@ -185,13 +185,14 @@ private:
     void small_dealloc(void* p) noexcept {
         CIEL_ASSERT(global_pagemap.load(p) == slab_kind::Small);
 
-        CIELMALLOC_LOG("CielMalloc: small_dealloc {} from alloc_id {}", p, remote_alloc()->id());
-
         meta_slab* slab = meta_slab::get_meta_slab(p);
         small_slab* hq  = small_slab::get_slab(p);
         if (hq->remote_alloc() != remote_alloc()) {
             remote_dealloc(hq->remote_alloc(), p, slab->sizeclass());
+            return;
         }
+
+        CIELMALLOC_LOG("CielMalloc: small_dealloc {} from alloc_id {}", p, remote_alloc()->id());
 
         if CIEL_UNLIKELY (slab->deallocate(p)) {
             list<meta_slab>& slabs = small_slabs_[slab->sizeclass()];
@@ -246,12 +247,13 @@ private:
     void medium_dealloc(void* p) noexcept {
         CIEL_ASSERT(global_pagemap.load(p) == slab_kind::Medium);
 
-        CIELMALLOC_LOG("CielMalloc: medium_dealloc {} from alloc_id {}", p, remote_alloc()->id());
-
         medium_slab* slab = medium_slab::get_slab(p);
         if (slab->remote_alloc() != remote_alloc()) {
             remote_dealloc(slab->remote_alloc(), p, slab->sizeclass());
+            return;
         }
+
+        CIELMALLOC_LOG("CielMalloc: medium_dealloc {} from alloc_id {}", p, remote_alloc()->id());
 
         if CIEL_UNLIKELY (slab->deallocate(p)) {
             const uint8_t sizeclass        = slab->sizeclass();

@@ -8,12 +8,13 @@
 #include <cielmalloc/sizeclass.hpp>
 
 #include <cstddef>
+#include <thread>
 
 TEST(small_alloc, zero) {
     constexpr size_t allocated_size = 0;
-    ciel::println("Small alloc: {} bytes...", allocated_size);
+    ciel::println("UnitTest: Small alloc: {} bytes...", allocated_size);
 
-    ciel::inplace_vector<void*, 8> iv;
+    ciel::inplace_vector<void*, 1> iv;
     for (size_t i = 0; i < iv.capacity(); ++i) {
         iv.unchecked_emplace_back(cielmalloc::malloc(allocated_size));
     }
@@ -25,13 +26,13 @@ TEST(small_alloc, zero) {
 
 TEST(small_alloc, single_thread) {
     constexpr size_t begin_size = 4;
-    constexpr size_t end_size   = cielmalloc::MediumThreshold;
 
-    for (size_t allocated_size = begin_size; allocated_size < end_size; allocated_size *= 1.3) {
-        ciel::println("Small alloc: {} bytes... sizeclass: {}", allocated_size,
+    for (size_t allocated_size = begin_size;
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
+        ciel::println("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
                       cielmalloc::size_to_sizeclass(allocated_size));
 
-        ciel::inplace_vector<void*, 1024> iv;
+        ciel::inplace_vector<void*, 1> iv;
         for (size_t i = 0; i < iv.capacity(); ++i) {
             void* p = cielmalloc::malloc(allocated_size);
             iv.unchecked_emplace_back(p);
@@ -44,5 +45,32 @@ TEST(small_alloc, single_thread) {
         for (void* p : iv) {
             cielmalloc::free(p);
         }
+    }
+}
+
+TEST(small_alloc, multi_thread) {
+    constexpr size_t begin_size = 4;
+
+    for (size_t allocated_size = begin_size;
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
+        ciel::println("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
+                      cielmalloc::size_to_sizeclass(allocated_size));
+
+        ciel::inplace_vector<void*, 1> iv;
+        for (size_t i = 0; i < iv.capacity(); ++i) {
+            void* p = cielmalloc::malloc(allocated_size);
+            iv.unchecked_emplace_back(p);
+        }
+
+        for (void* p : iv) {
+            mess_with_memory(p, allocated_size);
+        }
+
+        std::thread t([&]() {
+            for (void* p : iv) {
+                cielmalloc::free(p);
+            }
+        });
+        t.join();
     }
 }

@@ -8,17 +8,17 @@
 #include <cielmalloc/sizeclass.hpp>
 
 #include <cstddef>
-#include <cstring>
+#include <thread>
 
 TEST(medium_alloc, single_thread) {
     constexpr size_t begin_size = cielmalloc::MediumThreshold;
-    constexpr size_t end_size   = cielmalloc::LargeThreshold;
 
-    for (size_t allocated_size = begin_size; allocated_size < end_size; allocated_size *= 1.3) {
-        ciel::println("Medium alloc: {} bytes... sizeclass: {}", allocated_size,
+    for (size_t allocated_size = begin_size; cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSizeclasses;
+         allocated_size *= 1.3) {
+        ciel::println("UnitTest: Medium alloc: {} bytes... sizeclass: {}", allocated_size,
                       cielmalloc::size_to_sizeclass(allocated_size));
 
-        ciel::inplace_vector<void*, 256> iv;
+        ciel::inplace_vector<void*, 1> iv;
         for (size_t i = 0; i < iv.capacity(); ++i) {
             void* p = cielmalloc::malloc(allocated_size);
             iv.unchecked_emplace_back(p);
@@ -31,5 +31,32 @@ TEST(medium_alloc, single_thread) {
         for (void* p : iv) {
             cielmalloc::free(p);
         }
+    }
+}
+
+TEST(medium_alloc, multi_thread) {
+    constexpr size_t begin_size = cielmalloc::MediumThreshold;
+
+    for (size_t allocated_size = begin_size; cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSizeclasses;
+         allocated_size *= 1.3) {
+        ciel::println("UnitTest: Medium alloc: {} bytes... sizeclass: {}", allocated_size,
+                      cielmalloc::size_to_sizeclass(allocated_size));
+
+        ciel::inplace_vector<void*, 1> iv;
+        for (size_t i = 0; i < iv.capacity(); ++i) {
+            void* p = cielmalloc::malloc(allocated_size);
+            iv.unchecked_emplace_back(p);
+        }
+
+        for (void* p : iv) {
+            mess_with_memory(p, allocated_size);
+        }
+
+        std::thread t([&]() {
+            for (void* p : iv) {
+                cielmalloc::free(p);
+            }
+        });
+        t.join();
     }
 }
