@@ -35,4 +35,13 @@ static_assert(LargeMask == 0xffff'ffff'ff00'0000);
 
 } // namespace cielmalloc
 
+#define CIELMALLOC_LOG_ON true // TODO
+
+#if CIELMALLOC_LOG_ON
+#  include <ciel/core/message.hpp>
+#  define CIELMALLOC_LOG(...) ciel::println(__VA_ARGS__)
+#else
+#  define CIELMALLOC_LOG(...)
+#endif
+
 #endif // CIELMALLOC_INCLUDE_CIELMALLOC_CONFIG_HPP_
