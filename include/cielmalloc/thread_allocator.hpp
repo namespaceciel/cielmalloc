@@ -36,6 +36,8 @@ private:
         remote_list remote_lists[RemoteSlots];
 
         void enqueue(const uintptr_t target_id, void* p, const uint8_t sizeclass) noexcept {
+            CIELMALLOC_LOG("CielMalloc: message {} of {} enqueues", p, target_id);
+
             size += cielmalloc::sizeclass_to_size(sizeclass);
 
             remote* r = static_cast<remote*>(p);
@@ -47,6 +49,8 @@ private:
         }
 
         void post(const size_t my_id) noexcept {
+            CIELMALLOC_LOG("CielMalloc: messages all post from alloc_id {}", my_id);
+
             size = 0;
 
             size_t shift = 0;
@@ -91,7 +95,9 @@ private:
     remote_cache remote_caches;
 
     thread_allocator() noexcept
-        : remote_alloc_(pool<remote_allocator>::get().acquire()) {}
+        : remote_alloc_(pool<remote_allocator>::get().acquire()) {
+        CIELMALLOC_LOG("CielMalloc: thread_allocator constructs from alloc_id {}", remote_alloc()->id());
+    }
 
 public:
     thread_allocator(const thread_allocator&)            = delete;
@@ -100,6 +106,9 @@ public:
     // Post all messages, give remote_alloc_ back to pool.
     ~thread_allocator() {
         post<false>();
+
+        CIELMALLOC_LOG("CielMalloc: thread_allocator destroys from alloc_id {}", remote_alloc()->id());
+
         pool<remote_allocator>::get().release(remote_alloc_);
     }
 
@@ -131,6 +140,9 @@ private:
             if CIEL_UNLIKELY (slab->empty()) {
                 slabs.pop_front();
             }
+
+            CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
+                           cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
 
             return res;
         }
@@ -164,11 +176,16 @@ private:
             slabs.push_front(slab);
         }
 
+        CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
+                       cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
+
         return res;
     }
 
     void small_dealloc(void* p) noexcept {
         CIEL_ASSERT(global_pagemap.load(p) == slab_kind::Small);
+
+        CIELMALLOC_LOG("CielMalloc: small_dealloc {} from alloc_id {}", p, remote_alloc()->id());
 
         meta_slab* slab = meta_slab::get_meta_slab(p);
         small_slab* hq  = small_slab::get_slab(p);
@@ -201,6 +218,9 @@ private:
                 slabs.pop_front();
             }
 
+            CIELMALLOC_LOG("CielMalloc: medium_alloc {} of size {} from alloc_id {}", res,
+                           cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
+
             return res;
         }
 
@@ -217,11 +237,16 @@ private:
             slabs.push_front(slab);
         }
 
+        CIELMALLOC_LOG("CielMalloc: medium_alloc {} of size {} from alloc_id {}", res,
+                       cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
+
         return res;
     }
 
     void medium_dealloc(void* p) noexcept {
         CIEL_ASSERT(global_pagemap.load(p) == slab_kind::Medium);
+
+        CIELMALLOC_LOG("CielMalloc: medium_dealloc {} from alloc_id {}", p, remote_alloc()->id());
 
         medium_slab* slab = medium_slab::get_slab(p);
         if (slab->remote_alloc() != remote_alloc()) {
@@ -241,10 +266,15 @@ private:
     // Large allocations are rare and need to be reused as soon as possible,
     // so we manage them directly using a global lock-free stack.
     CIEL_NODISCARD void* large_alloc(size_t size) noexcept {
-        return global_alloc.allocate(size);
+        void* res = global_alloc.allocate(size);
+
+        CIELMALLOC_LOG("CielMalloc: large_alloc {} of size {} from alloc_id {}", res, size, remote_alloc()->id());
+
+        return res;
     }
 
     void large_dealloc(void* p, slab_kind kind) noexcept {
+        CIELMALLOC_LOG("CielMalloc: large_dealloc {} from alloc_id {}", p, remote_alloc()->id());
         global_alloc.deallocate(p, kind);
     }
 
