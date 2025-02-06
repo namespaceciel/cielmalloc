@@ -2,6 +2,7 @@
 #define CIELMALLOC_INCLUDE_CIELMALLOC_THREAD_ALLOCATOR_HPP_
 
 #include <ciel/core/config.hpp>
+#include <ciel/core/finally.hpp>
 #include <cielmalloc/global_allocator.hpp>
 #include <cielmalloc/list.hpp>
 #include <cielmalloc/medium_slab.hpp>
@@ -126,6 +127,13 @@ private:
         const uint8_t small_sizeclass = cielmalloc::size_to_sizeclass(size);
         CIEL_ASSERT_M(small_sizeclass < small_slabs_.size(), "{} >= {}", small_sizeclass, small_slabs_.size());
 
+        void* res = nullptr;
+        CIEL_DEFER({
+            CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(small_sizeclass)));
+            CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
+                           cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
+        });
+
         list<meta_slab>& slabs = small_slabs_[small_sizeclass];
         // Check if we have some available meta_slabs in list.
         if CIEL_LIKELY (!slabs.empty()) {
@@ -134,15 +142,11 @@ private:
                           &(small_slab::get_slab(slab)->meta_[slab->index_]), slab);
             CIEL_ASSERT(!slab->empty());
 
-            void* res = slab->allocate();
-            CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(small_sizeclass)));
+            res = slab->allocate();
 
             if CIEL_UNLIKELY (slab->empty()) {
                 slabs.pop_front();
             }
-
-            CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
-                           cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
 
             return res;
         }
@@ -169,15 +173,11 @@ private:
             small_slabs_headquarter_.pop_front();
         }
 
-        void* res = slab->allocate();
-        CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(small_sizeclass)));
+        res = slab->allocate();
 
         if CIEL_LIKELY (!slab->empty()) {
             slabs.push_front(slab);
         }
-
-        CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
-                       cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
 
         return res;
     }
@@ -207,20 +207,24 @@ private:
         const uint8_t medium_sizeclass = sizeclass - NumSmallClasses;
         CIEL_ASSERT_M(medium_sizeclass < medium_slabs_.size(), "{} >= {}", medium_sizeclass, medium_slabs_.size());
 
+        void* res = nullptr;
+        CIEL_DEFER({
+            CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(sizeclass)));
+            CIELMALLOC_LOG("CielMalloc: medium_alloc {} of size {} from alloc_id {}", res,
+                           cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
+        });
+
         list<medium_slab>& slabs = medium_slabs_[medium_sizeclass];
         // Check if we have some available slabs in list.
         if CIEL_LIKELY (!slabs.empty()) {
             medium_slab* slab = slabs.front();
             CIEL_ASSERT(!slab->empty());
 
-            void* res = slab->allocate();
+            res = slab->allocate();
 
             if CIEL_UNLIKELY (slab->empty()) {
                 slabs.pop_front();
             }
-
-            CIELMALLOC_LOG("CielMalloc: medium_alloc {} of size {} from alloc_id {}", res,
-                           cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
 
             return res;
         }
@@ -232,14 +236,11 @@ private:
 
         global_pagemap.store(slab, slab_kind::Medium);
 
-        void* res = slab->allocate();
+        res = slab->allocate();
 
         if CIEL_LIKELY (!slab->empty()) {
             slabs.push_front(slab);
         }
-
-        CIELMALLOC_LOG("CielMalloc: medium_alloc {} of size {} from alloc_id {}", res,
-                       cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
 
         return res;
     }
