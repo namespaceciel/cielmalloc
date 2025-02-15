@@ -9,13 +9,13 @@ using namespace cielmalloc;
 
 TEST(sizeclass, print) {
     for (size_t i = 0; i < sizeclass_metadata.small_slab_slots.size(); ++i) {
-        ciel::println("small_sizeclass: {}, size: {}, alignment: {}, slots: {}", i, sizeclass_metadata.size[i],
-                      sizeclass_metadata.alignment[i], sizeclass_metadata.small_slab_slots[i]);
+        CIELMALLOC_LOG("small_sizeclass: {}, size: {}, alignment: {}, slots: {}", i, sizeclass_metadata.size[i],
+                       sizeclass_metadata.alignment[i], sizeclass_metadata.small_slab_slots[i]);
     }
 
     for (size_t i = 0; i < sizeclass_metadata.medium_slab_slots.size(); ++i) {
-        ciel::println("medium_sizeclass: {}, size: {}, alignment: {}, slots: {}", i + NumSmallClasses,
-                      sizeclass_metadata.size[i + NumSmallClasses], sizeclass_metadata.alignment[i],
-                      sizeclass_metadata.medium_slab_slots[i]);
+        CIELMALLOC_LOG("medium_sizeclass: {}, size: {}, alignment: {}, slots: {}", i + NumSmallClasses,
+                       sizeclass_metadata.size[i + NumSmallClasses], sizeclass_metadata.alignment[i],
+                       sizeclass_metadata.medium_slab_slots[i]);
     }
 }

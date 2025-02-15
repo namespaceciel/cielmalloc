@@ -18,6 +18,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ciellab)
 
+option(CIELMALLOC_USE_LOG     "Turn on logs"     ${PROJECT_IS_TOP_LEVEL})
 option(CIELMALLOC_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
 
 add_library(cielmalloc INTERFACE)
@@ -25,6 +26,10 @@ add_library(cielmalloc INTERFACE)
 target_link_libraries(cielmalloc INTERFACE ciellab)
 
 target_include_directories(cielmalloc INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+if (CIELMALLOC_USE_LOG)
+    add_definitions(-DCIELMALLOC_LOG_ON)
+endif()
 
 if (CIELMALLOC_BUILD_TESTS)
 	enable_testing()

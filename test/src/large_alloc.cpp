@@ -14,7 +14,7 @@ TEST(large_alloc, single_thread) {
     constexpr size_t end_size   = cielmalloc::one_at_bit(27);
 
     for (size_t allocated_size = begin_size; allocated_size < end_size; allocated_size *= 1.3) {
-        ciel::println("UnitTest: Large alloc: {} bytes...", allocated_size);
+        CIELMALLOC_LOG("UnitTest: Large alloc: {} bytes...", allocated_size);
 
         ciel::inplace_vector<void*, 1> iv;
         for (size_t i = 0; i < iv.capacity(); ++i) {

@@ -12,7 +12,7 @@
 
 TEST(small_alloc, zero) {
     constexpr size_t allocated_size = 0;
-    ciel::println("UnitTest: Small alloc: {} bytes...", allocated_size);
+    CIELMALLOC_LOG("UnitTest: Small alloc: {} bytes...", allocated_size);
 
     ciel::inplace_vector<void*, 1> iv;
     for (size_t i = 0; i < iv.capacity(); ++i) {
@@ -29,8 +29,8 @@ TEST(small_alloc, single_thread) {
 
     for (size_t allocated_size = begin_size;
          cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
-        ciel::println("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
-                      cielmalloc::size_to_sizeclass(allocated_size));
+        CIELMALLOC_LOG("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
+                       cielmalloc::size_to_sizeclass(allocated_size));
 
         ciel::inplace_vector<void*, 1> iv;
         for (size_t i = 0; i < iv.capacity(); ++i) {
@@ -53,8 +53,8 @@ TEST(small_alloc, multi_thread) {
 
     for (size_t allocated_size = begin_size;
          cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
-        ciel::println("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
-                      cielmalloc::size_to_sizeclass(allocated_size));
+        CIELMALLOC_LOG("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
+                       cielmalloc::size_to_sizeclass(allocated_size));
 
         ciel::inplace_vector<void*, 1> iv;
         for (size_t i = 0; i < iv.capacity(); ++i) {
