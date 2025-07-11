@@ -28,7 +28,8 @@ TEST(small_alloc, single_thread) {
     constexpr size_t begin_size = 4;
 
     for (size_t allocated_size = begin_size;
-         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClassesRange.second;
+         allocated_size *= 1.3) {
         CIELMALLOC_LOG("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
                        cielmalloc::size_to_sizeclass(allocated_size));
 
@@ -52,7 +53,8 @@ TEST(small_alloc, multi_thread) {
     constexpr size_t begin_size = 4;
 
     for (size_t allocated_size = begin_size;
-         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClasses; allocated_size *= 1.3) {
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSmallClassesRange.second;
+         allocated_size *= 1.3) {
         CIELMALLOC_LOG("UnitTest: Small alloc: {} bytes... sizeclass: {}", allocated_size,
                        cielmalloc::size_to_sizeclass(allocated_size));
 

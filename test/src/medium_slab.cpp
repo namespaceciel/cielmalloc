@@ -16,7 +16,7 @@ TEST(medium_slab, all) {
     auto chunk = static_cast<medium_slab*>(pal::reserve(LargeThreshold));
     pal::commit(chunk, LargeThreshold);
 
-    for (uint8_t i = NumSmallClasses; i < NumSizeclasses; ++i) {
+    for (uint8_t i = NumMediumClassesRange.first; i < NumMediumClassesRange.second; ++i) {
         const auto slots = medium_slab_slots(i);
 
         ciel::inplace_vector<void*, 255> iv;

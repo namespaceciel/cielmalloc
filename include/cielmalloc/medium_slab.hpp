@@ -70,8 +70,7 @@ public:
 
     void init(remote_allocator* alloc, uint8_t sc) noexcept {
         CIEL_ASSERT(ciel::is_aligned(this, LargeThreshold));
-        CIEL_ASSERT(sc >= NumSmallClasses);
-        CIEL_ASSERT((sc - NumSmallClasses) < NumMediumClasses);
+        CIEL_ASSERT(NumMediumClassesRange.first <= sc && sc < NumMediumClassesRange.second);
         CIEL_ASSERT(alloc != nullptr);
 
         remote_alloc_ = alloc;

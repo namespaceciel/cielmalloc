@@ -1,14 +1,15 @@
 #ifndef CIELMALLOC_INCLUDE_CIELMALLOC_SIZECLASS_HPP_
 #define CIELMALLOC_INCLUDE_CIELMALLOC_SIZECLASS_HPP_
 
+#include <ciel/core/array.hpp>
 #include <ciel/core/message.hpp>
 #include <cielmalloc/bits.hpp>
 #include <cielmalloc/config.hpp>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <utility>
 
 namespace cielmalloc {
 
@@ -50,23 +51,25 @@ inline constexpr uint8_t size_to_sizeclass(size_t size) noexcept {
 //   1TB,   2TB,   4TB,   8TB,
 //   16TB,  32TB,  64TB,  128TB, 256TB )
 
-inline constexpr uint8_t NumSizeclasses = cielmalloc::size_to_sizeclass(LargeThreshold);   // 75
+inline constexpr uint8_t NumSizeclasses = cielmalloc::size_to_sizeclass(LargeThreshold); // 75
 
-inline constexpr uint8_t NumSmallClasses = cielmalloc::size_to_sizeclass(MediumThreshold); // 43
+inline constexpr std::pair<uint8_t, uint8_t> NumSmallClassesRange = {
+    0, cielmalloc::size_to_sizeclass(MediumThreshold)}; // [0, 43)
 
-inline constexpr uint8_t NumMediumClasses = NumSizeclasses - NumSmallClasses;              // 32
+inline constexpr std::pair<uint8_t, uint8_t> NumMediumClassesRange = {NumSmallClassesRange.second,
+                                                                      NumSizeclasses};                 // [43, 75)
 
-inline constexpr uint8_t NumLargeClasses = AddressBits - LargeThresholdBits;               // 24
+inline constexpr std::pair<uint8_t, uint8_t> NumLargeClassesRange = {LargeThresholdBits, AddressBits}; // [24, 48)
 
 struct sizeclass_table {
     // sizeclass -> size
-    std::array<size_t, NumSizeclasses> size{};
+    ciel::array<size_t, 0, NumSizeclasses> size{};
     // sizeclass -> alignment
-    std::array<size_t, NumSizeclasses> alignment{};
+    ciel::array<size_t, 0, NumSizeclasses> alignment{};
     // how many objects can a 64KB slab allocate for each small sizeclass
-    std::array<uint16_t, NumSmallClasses> small_slab_slots{};
+    ciel::array<uint16_t, NumSmallClassesRange.first, NumSmallClassesRange.second> small_slab_slots{};
     // how many objects can a 16MB slab allocate for each medium sizeclass
-    std::array<uint8_t, NumMediumClasses> medium_slab_slots{};
+    ciel::array<uint8_t, NumMediumClassesRange.first, NumMediumClassesRange.second> medium_slab_slots{};
 
     constexpr sizeclass_table() noexcept {
         for (uint8_t sizeclass = 0; sizeclass < NumSizeclasses; ++sizeclass) {
@@ -74,12 +77,12 @@ struct sizeclass_table {
             alignment[sizeclass] = cielmalloc::lsb(size[sizeclass]);
         }
 
-        for (uint8_t i = 0; i < NumSmallClasses; ++i) {
+        for (uint8_t i = small_slab_slots.size_begin(); i < small_slab_slots.size_end(); ++i) {
             small_slab_slots[i] = static_cast<uint16_t>(MediumThreshold / size[i]);
         }
 
-        for (uint8_t i = NumSmallClasses; i < NumSizeclasses; ++i) {
-            medium_slab_slots[i - NumSmallClasses] = static_cast<uint8_t>((LargeThreshold - OSPageSize) / size[i]);
+        for (uint8_t i = medium_slab_slots.size_begin(); i < medium_slab_slots.size_end(); ++i) {
+            medium_slab_slots[i] = static_cast<uint8_t>((LargeThreshold - OSPageSize) / size[i]);
         }
     }
 
@@ -102,7 +105,7 @@ inline constexpr uint16_t small_slab_slots(uint8_t sizeclass) noexcept {
 }
 
 inline constexpr uint8_t medium_slab_slots(uint8_t sizeclass) noexcept {
-    return sizeclass_metadata.medium_slab_slots[sizeclass - NumSmallClasses];
+    return sizeclass_metadata.medium_slab_slots[sizeclass];
 }
 
 } // namespace cielmalloc

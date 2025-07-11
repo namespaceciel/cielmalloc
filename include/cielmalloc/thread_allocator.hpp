@@ -1,6 +1,7 @@
 #ifndef CIELMALLOC_INCLUDE_CIELMALLOC_THREAD_ALLOCATOR_HPP_
 #define CIELMALLOC_INCLUDE_CIELMALLOC_THREAD_ALLOCATOR_HPP_
 
+#include <ciel/core/array.hpp>
 #include <ciel/core/config.hpp>
 #include <ciel/core/finally.hpp>
 #include <cielmalloc/global_allocator.hpp>
@@ -10,15 +11,14 @@
 #include <cielmalloc/sizeclass.hpp>
 #include <cielmalloc/small_slab.hpp>
 
-#include <array>
 #include <cstddef>
 
 namespace cielmalloc {
 
 class thread_allocator {
 private:
-    std::array<list<medium_slab>, NumMediumClasses> medium_slabs_;
-    std::array<list<meta_slab>, NumSmallClasses> small_slabs_;
+    ciel::array<list<medium_slab>, NumMediumClassesRange.first, NumMediumClassesRange.second> medium_slabs_;
+    ciel::array<list<meta_slab>, NumSmallClassesRange.first, NumSmallClassesRange.second> small_slabs_;
     list<small_slab> small_slabs_headquarter_;
     remote_allocator* remote_alloc_;
 
@@ -124,17 +124,16 @@ private:
     }
 
     CIEL_NODISCARD void* small_alloc(size_t size) noexcept {
-        const uint8_t small_sizeclass = cielmalloc::size_to_sizeclass(size);
-        CIEL_ASSERT_M(small_sizeclass < small_slabs_.size(), "{} >= {}", small_sizeclass, small_slabs_.size());
+        const uint8_t sizeclass = cielmalloc::size_to_sizeclass(size);
 
         void* res = nullptr;
         CIEL_DEFER({
-            CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(small_sizeclass)));
+            CIEL_ASSERT(ciel::is_aligned(res, cielmalloc::sizeclass_to_alignment(sizeclass)));
             CIELMALLOC_LOG("CielMalloc: small_alloc {} of size {} from alloc_id {}", res,
-                           cielmalloc::sizeclass_to_size(small_sizeclass), remote_alloc()->id());
+                           cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
         });
 
-        list<meta_slab>& slabs = small_slabs_[small_sizeclass];
+        list<meta_slab>& slabs = small_slabs_[sizeclass];
         // Check if we have some available meta_slabs in list.
         if CIEL_LIKELY (!slabs.empty()) {
             meta_slab* slab = slabs.front();
@@ -165,7 +164,7 @@ private:
         small_slab* hq = small_slabs_headquarter_.front();
         CIEL_ASSERT(!hq->empty());
 
-        meta_slab* slab = hq->allocate_slab(small_sizeclass);
+        meta_slab* slab = hq->allocate_slab(sizeclass);
         CIEL_ASSERT_M(&(small_slab::get_slab(slab)->meta_[slab->index_]) == slab, "{} != {}",
                       &(small_slab::get_slab(slab)->meta_[slab->index_]), slab);
 
@@ -203,9 +202,7 @@ private:
     }
 
     CIEL_NODISCARD void* medium_alloc(size_t size) noexcept {
-        const uint8_t sizeclass        = cielmalloc::size_to_sizeclass(size);
-        const uint8_t medium_sizeclass = sizeclass - NumSmallClasses;
-        CIEL_ASSERT_M(medium_sizeclass < medium_slabs_.size(), "{} >= {}", medium_sizeclass, medium_slabs_.size());
+        const uint8_t sizeclass = cielmalloc::size_to_sizeclass(size);
 
         void* res = nullptr;
         CIEL_DEFER({
@@ -214,7 +211,7 @@ private:
                            cielmalloc::sizeclass_to_size(sizeclass), remote_alloc()->id());
         });
 
-        list<medium_slab>& slabs = medium_slabs_[medium_sizeclass];
+        list<medium_slab>& slabs = medium_slabs_[sizeclass];
         // Check if we have some available slabs in list.
         if CIEL_LIKELY (!slabs.empty()) {
             medium_slab* slab = slabs.front();
@@ -257,11 +254,8 @@ private:
         CIELMALLOC_LOG("CielMalloc: medium_dealloc {} from alloc_id {}", p, remote_alloc()->id());
 
         if CIEL_UNLIKELY (slab->deallocate(p)) {
-            const uint8_t sizeclass        = slab->sizeclass();
-            const uint8_t medium_sizeclass = sizeclass - NumSmallClasses;
-            CIEL_ASSERT_M(medium_sizeclass < medium_slabs_.size(), "{} >= {}", medium_sizeclass, medium_slabs_.size());
-
-            list<medium_slab>& slabs = medium_slabs_[medium_sizeclass];
+            const uint8_t sizeclass  = slab->sizeclass();
+            list<medium_slab>& slabs = medium_slabs_[sizeclass];
             slabs.push_front(slab);
         }
     }
@@ -306,7 +300,7 @@ private:
             CIEL_ASSERT(sizeclass <= NumSizeclasses);
 
             if (r->target_id() == remote_alloc()->id()) {
-                if (sizeclass < NumSmallClasses) {
+                if (sizeclass < NumSmallClassesRange.second) {
                     small_dealloc(r);
 
                 } else {
@@ -329,11 +323,11 @@ public:
 
         const uint8_t sizeclass = cielmalloc::size_to_sizeclass(size);
 
-        if CIEL_LIKELY (sizeclass < NumSmallClasses) {
+        if CIEL_LIKELY (sizeclass < NumSmallClassesRange.second) {
             return small_alloc(size);
         }
 
-        if (sizeclass < NumSizeclasses) {
+        if (sizeclass < NumMediumClassesRange.second) {
             return medium_alloc(size);
         }
 

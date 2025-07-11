@@ -14,7 +14,7 @@ include(FetchContent)
 FetchContent_Declare(
     ciellab
     GIT_REPOSITORY https://github.com/namespaceciel/ciellab.git
-    GIT_TAG        43379267997d4c6e9ac38c7ebc3580e9157c666f
+    GIT_TAG        main
 )
 FetchContent_MakeAvailable(ciellab)
 

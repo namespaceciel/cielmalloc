@@ -13,7 +13,8 @@
 TEST(medium_alloc, single_thread) {
     constexpr size_t begin_size = cielmalloc::MediumThreshold;
 
-    for (size_t allocated_size = begin_size; cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSizeclasses;
+    for (size_t allocated_size = begin_size;
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumMediumClassesRange.second;
          allocated_size *= 1.3) {
         CIELMALLOC_LOG("UnitTest: Medium alloc: {} bytes... sizeclass: {}", allocated_size,
                        cielmalloc::size_to_sizeclass(allocated_size));
@@ -37,7 +38,8 @@ TEST(medium_alloc, single_thread) {
 TEST(medium_alloc, multi_thread) {
     constexpr size_t begin_size = cielmalloc::MediumThreshold;
 
-    for (size_t allocated_size = begin_size; cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumSizeclasses;
+    for (size_t allocated_size = begin_size;
+         cielmalloc::size_to_sizeclass(allocated_size) < cielmalloc::NumMediumClassesRange.second;
          allocated_size *= 1.3) {
         CIELMALLOC_LOG("UnitTest: Medium alloc: {} bytes... sizeclass: {}", allocated_size,
                        cielmalloc::size_to_sizeclass(allocated_size));
