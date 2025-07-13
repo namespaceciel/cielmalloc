@@ -152,8 +152,7 @@ private:
 
         if (small_slabs_headquarter_.empty()) {
             // Allocate a new slab.
-            small_slab* hq = static_cast<small_slab*>(pal::reserve(LargeThreshold));
-            pal::commit(hq, sizeof(small_slab));
+            small_slab* hq = static_cast<small_slab*>(pal::reserve<true>(LargeThreshold));
             hq->init(remote_alloc());
 
             global_pagemap.store(hq, slab_kind::Small);
@@ -227,8 +226,7 @@ private:
         }
 
         // Allocate a new slab.
-        medium_slab* slab = static_cast<medium_slab*>(pal::reserve(LargeThreshold));
-        pal::commit(slab, sizeof(medium_slab));
+        medium_slab* slab = static_cast<medium_slab*>(pal::reserve<true>(LargeThreshold));
         slab->init(remote_alloc(), sizeclass);
 
         global_pagemap.store(slab, slab_kind::Medium);

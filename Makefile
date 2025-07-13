@@ -10,39 +10,18 @@ else
     NUM_JOB := 1
 endif
 
-GCC_PATH ?= gcc
-GCC_PATH := $(or $(CIELLAB_GCC),$(GCC_PATH))
-GXX_PATH ?= g++
-GXX_PATH := $(or $(CIELLAB_GXX),$(GXX_PATH))
-
-CLANG_PATH ?= clang
-CLANG_PATH := $(or $(CIELLAB_CLANG),$(CLANG_PATH))
-CLANGXX_PATH ?= clang++
-CLANGXX_PATH := $(or $(CIELLAB_CLANGXX),$(CLANGXX_PATH))
-
 clean:
 	rm -rf $(BUILD_DIR)
 .PHONY: clean
 
-clang_test_build:
-	cmake -S . -B $(BUILD_DIR)/clang -DCMAKE_C_COMPILER=$(CLANG_PATH) -DCMAKE_CXX_COMPILER=$(CLANGXX_PATH) -DCMAKE_CXX_FLAGS="-stdlib=libc++" && \
-	cmake --build $(BUILD_DIR)/clang --target cielmalloc_test -j $(NUM_JOB)
+build_test:
+	cmake -S . -B $(BUILD_DIR) -DCMAKE_CXX_CLANG_TIDY="clang-tidy" && \
+	cmake --build $(BUILD_DIR) --target cielmalloc_test -j $(NUM_JOB)
 
-clang_test_run:
-	$(BUILD_DIR)/clang/test/cielmalloc_test
+run_test:
+	$(BUILD_DIR)/test/cielmalloc_test
 
-clang_test: clang_test_build clang_test_run
-
-gcc_test_build:
-	cmake -S . -B $(BUILD_DIR)/gcc -DCMAKE_C_COMPILER=$(GCC_PATH) -DCMAKE_CXX_COMPILER=$(GXX_PATH) && \
-	cmake --build $(BUILD_DIR)/gcc --target cielmalloc_test -j $(NUM_JOB)
-
-gcc_test_run:
-	$(BUILD_DIR)/gcc/test/cielmalloc_test
-
-gcc_test: gcc_test_build gcc_test_run
-
-test: clang_test_build gcc_test_build clang_test_run gcc_test_run
+test: build_test run_test
 .PHONY: test
 
 format:

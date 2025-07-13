@@ -175,8 +175,6 @@ public:
         const uint8_t index = stack_[top_++];
         meta_slab* slab     = &meta_[index];
 
-        pal::commit(reinterpret_cast<void*>(slab->slab_address(index)), MediumThreshold);
-
         slab->init(index, sizeclass);
         return slab;
     }

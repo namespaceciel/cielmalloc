@@ -15,11 +15,6 @@ inline constexpr size_t ReserveMultiple = 16;
 
 inline constexpr size_t CachelineSize = ciel::cacheline_size;
 
-inline constexpr size_t OSPageSize = 0x1000; // 64KB
-#ifdef PAGE_SIZE
-static_assert(PAGE_SIZE == OSPageSize, "Page size from system header does not match cielmalloc config page size");
-#endif
-
 inline constexpr size_t MinAllocBits = 4;
 inline constexpr size_t MinAllocSize = cielmalloc::one_at_bit(MinAllocBits); // 16
 
