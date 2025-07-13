@@ -76,6 +76,18 @@ CIEL_NODISCARD constexpr size_t from_exp_mant(size_t m_e) noexcept {
     return res;
 }
 
+template<class T, class F>
+CIEL_NODISCARD T* transform(T* ptr, F f) noexcept {
+    return reinterpret_cast<T*>(f(reinterpret_cast<uintptr_t>(ptr)));
+}
+
+template<class T>
+CIEL_NODISCARD T* offset(T* ptr, size_t size) noexcept {
+    return cielmalloc::transform(ptr, [size](uintptr_t p) noexcept {
+        return p + size;
+    });
+}
+
 } // namespace cielmalloc
 
 #endif // CIELMALLOC_BITS_HPP_

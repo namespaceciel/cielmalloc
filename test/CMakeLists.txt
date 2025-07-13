@@ -15,6 +15,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(cielmalloc_test
     src/bits.cpp
+    src/buddy.cpp
     src/large_alloc.cpp
     src/medium_alloc.cpp
     src/medium_slab.cpp
