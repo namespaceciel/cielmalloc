@@ -11,11 +11,20 @@ endif (NOT CMAKE_BUILD_TYPE)
 set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 
 include(FetchContent)
-FetchContent_Declare(
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../ciellab")
+  FetchContent_Declare(
+    ciellab
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../ciellab
+  )
+else()
+  FetchContent_Declare(
     ciellab
     GIT_REPOSITORY https://github.com/namespaceciel/ciellab.git
     GIT_TAG        main
-)
+  )
+endif()
+
 FetchContent_MakeAvailable(ciellab)
 
 option(CIELMALLOC_USE_LOG     "Turn on logs"     ${PROJECT_IS_TOP_LEVEL})

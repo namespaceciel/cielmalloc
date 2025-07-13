@@ -13,8 +13,7 @@
 using namespace cielmalloc;
 
 TEST(medium_slab, all) {
-    auto chunk = static_cast<medium_slab*>(pal::reserve(LargeThreshold));
-    pal::commit(chunk, LargeThreshold);
+    auto chunk = static_cast<medium_slab*>(pal::reserve<true>(LargeThreshold));
 
     for (uint8_t i = NumMediumClassesRange.first; i < NumMediumClassesRange.second; ++i) {
         const auto slots = medium_slab_slots(i);

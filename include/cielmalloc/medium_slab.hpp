@@ -90,7 +90,6 @@ public:
 
         const uint32_t index = stack_[top_++];
         void* p = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(this) + static_cast<uintptr_t>(index));
-        pal::commit(p, cielmalloc::sizeclass_to_size(sizeclass()));
 
         CIEL_ASSERT(ciel::is_aligned(p, cielmalloc::sizeclass_to_alignment(sizeclass_)));
         CIEL_ASSERT_M(get_slab(p) == this, "Allocated address {} go beyond this slab {}", p, this);

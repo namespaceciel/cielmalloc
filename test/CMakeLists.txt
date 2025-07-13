@@ -15,13 +15,15 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(cielmalloc_test
     src/bits.cpp
-    src/large_alloc.cpp
-    src/medium_alloc.cpp
-    src/medium_slab.cpp
-    src/pagemap.cpp
-    src/pool.cpp
-    src/sizeclass.cpp
-    src/small_alloc.cpp
+    src/buddy.cpp
+    # src/large_alloc.cpp
+    # src/medium_alloc.cpp
+    # src/medium_slab.cpp
+    # src/pagemap.cpp
+    # src/pool.cpp
+    src/range.cpp
+    # src/sizeclass.cpp
+    # src/small_alloc.cpp
 )
 
 include(GoogleTest)

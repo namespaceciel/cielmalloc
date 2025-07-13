@@ -23,16 +23,15 @@ public:
     global_allocator(const global_allocator&)            = delete;
     global_allocator& operator=(const global_allocator&) = delete;
 
-    CIEL_NODISCARD void* allocate(const size_t size) noexcept {
+    CIEL_NODISCARD void* allocate(size_t size) noexcept {
         const uint8_t sizeclass = cielmalloc::next_pow2_bits(size);
+        size                    = cielmalloc::one_at_bit(sizeclass);
 
         void* res = large_stack_[sizeclass].pop();
         if (res == nullptr) {
-            res = pal::reserve(cielmalloc::one_at_bit(sizeclass));
+            res = pal::reserve<true>(size);
             global_pagemap.store(res, static_cast<slab_kind>(sizeclass));
         }
-
-        pal::commit(res, size);
 
         return res;
     }
@@ -47,8 +46,8 @@ public:
         const uint8_t sizeclass = static_cast<uint8_t>(kind);
 
         // Save one page to be used as treiber_stack's node.
-        pal::decommit(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) + OSPageSize),
-                      cielmalloc::one_at_bit(sizeclass) - OSPageSize);
+        pal::decommit(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) + pal::page_size),
+                      cielmalloc::one_at_bit(sizeclass) - pal::page_size);
 
         large_stack_[sizeclass].push(static_cast<large_slab*>(p));
     }

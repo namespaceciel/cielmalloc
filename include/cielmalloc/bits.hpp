@@ -3,16 +3,13 @@
 
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
+#include <cielmalloc/aal.hpp>
 
 #include <bit>
 #include <cstddef>
+#include <type_traits>
 
 namespace cielmalloc {
-
-inline constexpr size_t Bits = sizeof(size_t) * 8;
-static_assert(Bits == 64, "Only 64bit system supported");
-
-inline constexpr size_t AddressBits = 48;
 
 template<class T>
 CIEL_NODISCARD constexpr T lsb(T x) noexcept {
@@ -23,7 +20,7 @@ template<class T = size_t, class S>
 CIEL_NODISCARD constexpr T one_at_bit(S shift) noexcept {
     static_assert(std::is_integral_v<T>);
 
-    CIEL_ASSERT(sizeof(T) * 8 > static_cast<size_t>(shift));
+    CIEL_ASSERT_M(sizeof(T) * 8 > static_cast<size_t>(shift), "shift is {}", shift);
 
     return static_cast<T>(1) << shift;
 }
@@ -74,6 +71,22 @@ CIEL_NODISCARD constexpr size_t from_exp_mant(size_t m_e) noexcept {
     const size_t res        = extended_m << (shifted_e + LowBits);
 
     return res;
+}
+
+struct DefaultTag {};
+
+template<class R = DefaultTag, class T, class F>
+CIEL_NODISCARD auto transform(T* ptr, F&& f) noexcept {
+    using RT = ciel::conditional_t<std::is_same_v<R, DefaultTag>, T, R>;
+
+    return reinterpret_cast<RT*>(f(reinterpret_cast<uintptr_t>(ptr)));
+}
+
+template<class T>
+CIEL_NODISCARD T* offset(T* ptr, size_t size) noexcept {
+    return cielmalloc::transform(ptr, [size](uintptr_t p) noexcept {
+        return p + size;
+    });
 }
 
 } // namespace cielmalloc
