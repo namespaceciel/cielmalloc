@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_GLOBAL_ALLOCATOR_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_GLOBAL_ALLOCATOR_HPP_
+#ifndef CIELMALLOC_GLOBAL_ALLOCATOR_HPP_
+#define CIELMALLOC_GLOBAL_ALLOCATOR_HPP_
 
 #include <ciel/core/array.hpp>
 #include <ciel/core/config.hpp>
@@ -59,4 +59,4 @@ inline global_allocator global_alloc;
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_GLOBAL_ALLOCATOR_HPP_
+#endif // CIELMALLOC_GLOBAL_ALLOCATOR_HPP_

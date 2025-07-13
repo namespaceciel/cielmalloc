@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_PAL_DEBUG_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_PAL_DEBUG_HPP_
+#ifndef CIELMALLOC_PAL_DEBUG_HPP_
+#define CIELMALLOC_PAL_DEBUG_HPP_
 
 #include <ciel/core/alignment.hpp>
 #include <ciel/core/config.hpp>
@@ -38,4 +38,4 @@ struct pal {
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_PAL_APPLE_HPP_
+#endif // CIELMALLOC_PAL_APPLE_HPP_

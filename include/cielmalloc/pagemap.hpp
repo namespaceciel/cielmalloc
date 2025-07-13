@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_PAGEMAP_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_PAGEMAP_HPP_
+#ifndef CIELMALLOC_PAGEMAP_HPP_
+#define CIELMALLOC_PAGEMAP_HPP_
 
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
@@ -49,4 +49,4 @@ inline pagemap global_pagemap;
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_PAGEMAP_HPP_
+#endif // CIELMALLOC_PAGEMAP_HPP_

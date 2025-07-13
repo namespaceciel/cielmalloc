@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_SIZECLASS_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_SIZECLASS_HPP_
+#ifndef CIELMALLOC_SIZECLASS_HPP_
+#define CIELMALLOC_SIZECLASS_HPP_
 
 #include <ciel/core/array.hpp>
 #include <ciel/core/message.hpp>
@@ -110,4 +110,4 @@ inline constexpr uint8_t medium_slab_slots(uint8_t sizeclass) noexcept {
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_SIZECLASS_HPP_
+#endif // CIELMALLOC_SIZECLASS_HPP_

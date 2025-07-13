@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_MEDIUM_SLAB_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_MEDIUM_SLAB_HPP_
+#ifndef CIELMALLOC_MEDIUM_SLAB_HPP_
+#define CIELMALLOC_MEDIUM_SLAB_HPP_
 
 #include <ciel/core/alignment.hpp>
 #include <ciel/core/config.hpp>
@@ -118,4 +118,4 @@ static_assert(sizeof(medium_slab) < MediumThreshold);
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_MEDIUM_SLAB_HPP_
+#endif // CIELMALLOC_MEDIUM_SLAB_HPP_

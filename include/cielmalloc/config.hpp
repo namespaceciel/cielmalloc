@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_CONFIG_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_CONFIG_HPP_
+#ifndef CIELMALLOC_CONFIG_HPP_
+#define CIELMALLOC_CONFIG_HPP_
 
 #include <ciel/core/config.hpp>
 #include <cielmalloc/bits.hpp>
@@ -42,4 +42,4 @@ static_assert(LargeMask == 0xffff'ffff'ff00'0000);
 #  define CIELMALLOC_LOG(...)
 #endif
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_CONFIG_HPP_
+#endif // CIELMALLOC_CONFIG_HPP_

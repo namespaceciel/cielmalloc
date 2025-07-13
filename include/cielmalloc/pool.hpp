@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_POOL_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_POOL_HPP_
+#ifndef CIELMALLOC_POOL_HPP_
+#define CIELMALLOC_POOL_HPP_
 
 #include <ciel/core/alignment.hpp>
 #include <ciel/core/config.hpp>
@@ -95,4 +95,4 @@ public:
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_POOL_HPP_
+#endif // CIELMALLOC_POOL_HPP_

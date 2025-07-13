@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_LARGE_SLAB_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_LARGE_SLAB_HPP_
+#ifndef CIELMALLOC_LARGE_SLAB_HPP_
+#define CIELMALLOC_LARGE_SLAB_HPP_
 
 #include <ciel/core/alignment.hpp>
 #include <ciel/core/config.hpp>
@@ -32,4 +32,4 @@ public:
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_LARGE_SLAB_HPP_
+#endif // CIELMALLOC_LARGE_SLAB_HPP_

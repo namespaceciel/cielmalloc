@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_SLAB_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_SLAB_HPP_
+#ifndef CIELMALLOC_SLAB_HPP_
+#define CIELMALLOC_SLAB_HPP_
 
 #include <ciel/core/config.hpp>
 #include <cielmalloc/bits.hpp>
@@ -33,4 +33,4 @@ public:
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_SLAB_HPP_
+#endif // CIELMALLOC_SLAB_HPP_

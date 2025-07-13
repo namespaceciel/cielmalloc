@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_LIST_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_LIST_HPP_
+#ifndef CIELMALLOC_LIST_HPP_
+#define CIELMALLOC_LIST_HPP_
 
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
@@ -49,4 +49,4 @@ public:
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_LIST_HPP_
+#endif // CIELMALLOC_LIST_HPP_

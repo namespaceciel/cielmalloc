@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_BITS_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_BITS_HPP_
+#ifndef CIELMALLOC_BITS_HPP_
+#define CIELMALLOC_BITS_HPP_
 
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
@@ -78,4 +78,4 @@ CIEL_NODISCARD constexpr size_t from_exp_mant(size_t m_e) noexcept {
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_BITS_HPP_
+#endif // CIELMALLOC_BITS_HPP_

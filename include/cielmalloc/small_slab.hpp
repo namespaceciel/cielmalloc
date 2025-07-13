@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_SMALL_SLAB_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_SMALL_SLAB_HPP_
+#ifndef CIELMALLOC_SMALL_SLAB_HPP_
+#define CIELMALLOC_SMALL_SLAB_HPP_
 
 #include <ciel/core/alignment.hpp>
 #include <ciel/core/config.hpp>
@@ -201,4 +201,4 @@ CIEL_NODISCARD inline meta_slab* meta_slab::get_meta_slab(void* p) noexcept {
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_SMALL_SLAB_HPP_
+#endif // CIELMALLOC_SMALL_SLAB_HPP_

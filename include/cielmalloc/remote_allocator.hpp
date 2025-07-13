@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_REMOTE_ALLOCATOR_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_REMOTE_ALLOCATOR_HPP_
+#ifndef CIELMALLOC_REMOTE_ALLOCATOR_HPP_
+#define CIELMALLOC_REMOTE_ALLOCATOR_HPP_
 
 #include <ciel/core/datasizeof.hpp>
 #include <ciel/core/message.hpp>
@@ -120,4 +120,4 @@ static_assert(alignof(slab_remote) == CachelineSize);
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_REMOTE_ALLOCATOR_HPP_
+#endif // CIELMALLOC_REMOTE_ALLOCATOR_HPP_

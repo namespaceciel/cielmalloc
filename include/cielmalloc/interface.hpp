@@ -1,5 +1,5 @@
-#ifndef CIELMALLOC_INCLUDE_CIELMALLOC_INTERFACE_HPP_
-#define CIELMALLOC_INCLUDE_CIELMALLOC_INTERFACE_HPP_
+#ifndef CIELMALLOC_INTERFACE_HPP_
+#define CIELMALLOC_INTERFACE_HPP_
 
 #include <cielmalloc/thread_allocator.hpp>
 
@@ -23,4 +23,4 @@ inline void free(void* ptr) noexcept {
 
 } // namespace cielmalloc
 
-#endif // CIELMALLOC_INCLUDE_CIELMALLOC_INTERFACE_HPP_
+#endif // CIELMALLOC_INTERFACE_HPP_
