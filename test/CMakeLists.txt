@@ -21,6 +21,7 @@ add_executable(cielmalloc_test
     src/medium_slab.cpp
     src/pagemap.cpp
     src/pool.cpp
+    src/range.cpp
     src/sizeclass.cpp
     src/small_alloc.cpp
 )
