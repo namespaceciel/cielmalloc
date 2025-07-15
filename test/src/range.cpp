@@ -2,10 +2,13 @@
 
 #include <ciel/core/pipe.hpp>
 #include <ciel/vector.hpp>
-#include <cielmalloc/range/lock_range.hpp>
+#include <cielmalloc/bits.hpp>
+#include <cielmalloc/range.hpp>
 
 #include <cstddef>
 #include <thread>
+
+#include "tools.hpp"
 
 using namespace cielmalloc;
 
@@ -42,4 +45,17 @@ TEST(range, lock_range) {
 
     ASSERT_EQ(range.a, 1000);
     ASSERT_EQ(range.b, 1000);
+}
+
+TEST(range, reserve_and_commit) {
+    using Range = ciel::pipe<reserve_range, commit_range>;
+
+    Range range;
+
+    const size_t bit = cielmalloc::next_pow2_bits(OSPageSize);
+    void* ptr        = range.alloc_range(bit);
+
+    mess_with_memory(ptr, OSPageSize);
+
+    range.dealloc_range(ptr, bit);
 }
