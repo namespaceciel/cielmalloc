@@ -7,10 +7,26 @@ on:
 
 jobs:
   job:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - { os: ubuntu-latest, arch: x64 }
+          - { os: ubuntu-latest, arch: arm64 }
+          - { os: macos-latest, arch: x64 }
+          - { os: macos-latest, arch: arm64 }
+      fail-fast: true
+
+    name: unit_test on ${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+    runs-on: ${{ matrix.platform.os }}-${{ matrix.platform.arch }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: setup
+        if: matrix.platform.os == 'macos'
+        run: |
+          xcode-select --install || true
+          brew update
 
       - name: build test against clang
         run: |
