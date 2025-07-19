@@ -35,10 +35,6 @@ private:
             T* res = reinterpret_cast<T*>(bump);
             bump += allocated_size;
 
-            const uintptr_t page_start = ciel::align_down(reinterpret_cast<uintptr_t>(res), OSPageSize);
-            const uintptr_t page_end   = ciel::align_up(reinterpret_cast<uintptr_t>(res) + sizeof(T), OSPageSize);
-            pal::commit(reinterpret_cast<void*>(page_start), page_end - page_start);
-
             CIEL_ASSERT(ciel::is_aligned(res, alignof(T)));
             return res;
         }
@@ -67,8 +63,7 @@ public:
 
         slab_view* slab = nullptr;
         if (slab = slabs_.pop(); slab == nullptr) {
-            slab = reinterpret_cast<slab_view*>(pal::reserve(slab_size));
-            pal::commit(slab, sizeof(slab_view));
+            slab = reinterpret_cast<slab_view*>(pal::reserve<true>(slab_size));
             slab->init();
         }
 

@@ -5,6 +5,7 @@
 #include <ciel/core/message.hpp>
 #include <cielmalloc/bits.hpp>
 #include <cielmalloc/config.hpp>
+#include <cielmalloc/pal.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -82,7 +83,7 @@ struct sizeclass_table {
         }
 
         for (uint8_t i = medium_slab_slots.size_begin(); i < medium_slab_slots.size_end(); ++i) {
-            medium_slab_slots[i] = static_cast<uint8_t>((LargeThreshold - OSPageSize) / size[i]);
+            medium_slab_slots[i] = static_cast<uint8_t>((LargeThreshold - pal::page_size) / size[i]);
         }
     }
 
