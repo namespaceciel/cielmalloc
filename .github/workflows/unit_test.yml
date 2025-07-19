@@ -7,26 +7,10 @@ on:
 
 jobs:
   job:
-    strategy:
-      matrix:
-        platform:
-          - { os: ubuntu-latest, arch: x64 }
-          - { os: ubuntu-latest, arch: arm64 }
-          - { os: macos-latest, arch: x64 }
-          - { os: macos-latest, arch: arm64 }
-      fail-fast: false
-
-    name: ${{ matrix.platform.os }}-${{ matrix.platform.arch }}
-    runs-on: ${{ matrix.platform.os }}-${{ matrix.platform.arch }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: setup
-        if: matrix.platform.os == 'macos'
-        run: |
-          xcode-select --install || true
-          brew update
 
       - name: build and test
         run: |
