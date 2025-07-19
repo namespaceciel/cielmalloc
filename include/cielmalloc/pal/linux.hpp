@@ -27,7 +27,6 @@ struct pal {
         aal::smallest_page_size;
 #endif
 
-    static constexpr int default_mmap_flags = MAP_NORESERVE;
     static constexpr int madvise_free_flags =
 #if defined(MADV_FREE)
         MADV_FREE
@@ -36,15 +35,12 @@ struct pal {
 #endif
         ;
 
-    template<bool Commit>
     CIEL_NODISCARD static void* reserve(size_t size) noexcept {
         CIEL_ASSERT(ciel::is_pow2(size));
 
-        auto prot = mitigations(pal_enforce_access) ? PROT_NONE : PROT_READ | PROT_WRITE;
+        auto prot = PROT_NONE;
 
-        void* p = mmap(nullptr, size, prot,
-                       MAP_PRIVATE | MAP_ANONYMOUS | DefaultMMAPFlags<OS>::flags | OS::extra_mmap_flags(false),
-                       AnonFD<OS>::fd, 0);
+        void* p = mmap(nullptr, size, prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 
         if (p != MAP_FAILED) {
             return p;
@@ -58,6 +54,8 @@ struct pal {
         CIEL_ASSERT(p != nullptr);
         CIEL_ASSERT(ciel::is_aligned(p, page_size));
         CIEL_ASSERT(ciel::is_aligned(p, size));
+
+        mprotect(p, size, PROT_READ | PROT_WRITE);
 
         if constexpr (zero_mem == YesZero) {
             zero(p, size);
@@ -79,6 +77,8 @@ struct pal {
 #endif
 
         madvise(p, size, madvise_free_flags);
+
+        mprotect(p, size, PROT_NONE);
     }
 
     static void zero(void* p, size_t size) noexcept {
