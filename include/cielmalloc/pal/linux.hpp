@@ -55,7 +55,7 @@ struct pal_impl {
 
         mprotect(p, size, PROT_READ | PROT_WRITE);
 
-        if constexpr (zero_mem == YesZero) {
+        if constexpr (NeedZeroMem == YesZero) {
             zero(p, size);
         }
 
@@ -67,7 +67,7 @@ struct pal_impl {
         CIEL_ASSERT(ciel::is_aligned(p, page_size));
         CIEL_ASSERT(ciel::is_aligned(p, size));
 
-        ciel::keep_errno ke;
+        const ciel::keep_errno ke;
 
 #  ifdef CIEL_IS_DEBUGGING
         // We need to make sure decommitted size is no less than initially committed size.
