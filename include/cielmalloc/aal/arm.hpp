@@ -1,23 +1,23 @@
 #ifndef CIELMALLOC_AAL_ARM_HPP_
 #define CIELMALLOC_AAL_ARM_HPP_
 
-#if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(__arm__) && !defined(_M_ARM)
-#  error "Unmatched architecture"
-#endif
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
 
-#include <cielmalloc/aal/flag.hpp>
+#  include <cielmalloc/aal/flag.hpp>
 
-#include <cstddef>
+#  include <cstddef>
 
 namespace cielmalloc {
 
-struct aal {
+struct aal_impl {
     static constexpr enum AalName aal_name = ARM;
 
     static constexpr size_t smallest_page_size = 0x1000;
 
-}; // struct aal
+}; // struct aal_impl
 
 } // namespace cielmalloc
+
+#endif
 
 #endif // CIELMALLOC_AAL_ARM_HPP_

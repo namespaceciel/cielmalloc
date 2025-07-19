@@ -9,4 +9,10 @@
 #  error "Unsupported architecture"
 #endif
 
+namespace cielmalloc {
+
+using aal = aal_impl;
+
+} // namespace cielmalloc
+
 #endif // CIELMALLOC_AAL_HPP_

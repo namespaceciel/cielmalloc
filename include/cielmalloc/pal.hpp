@@ -9,4 +9,10 @@
 #  error "Unsupported platform"
 #endif
 
+namespace cielmalloc {
+
+using pal = pal_impl;
+
+} // namespace cielmalloc
+
 #endif // CIELMALLOC_PAL_HPP_

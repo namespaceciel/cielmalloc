@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
 
+#include <ciel/core/config.hpp>
 #include <ciel/core/pipe.hpp>
 #include <ciel/vector.hpp>
-#include <cielmalloc/bits.hpp>
-#include <cielmalloc/range.hpp>
+#include <cielmalloc/commit_range.hpp>
+#include <cielmalloc/lock_range.hpp>
+#include <cielmalloc/pal.hpp>
+#include <cielmalloc/reserve_range.hpp>
 
 #include <cstddef>
 #include <thread>
@@ -52,10 +55,10 @@ TEST(range, reserve_and_commit) {
 
     Range range;
 
-    const size_t bit = cielmalloc::next_pow2_bits(OSPageSize);
-    void* ptr        = range.alloc_range(bit);
+    constexpr size_t size = pal::page_size;
+    void* p               = range.alloc_range(size);
 
-    mess_with_memory(ptr, OSPageSize);
+    mess_with_memory(p, size);
 
-    range.dealloc_range(ptr, bit);
+    range.dealloc_range(p, size);
 }

@@ -1,35 +1,32 @@
 #ifndef CIELMALLOC_PAL_APPLE_HPP_
 #define CIELMALLOC_PAL_APPLE_HPP_
 
-#if !defined(__APPLE__)
-#  error "Unmatched platform"
-#endif
+#if defined(__APPLE__)
 
-#include <ciel/core/alignment.hpp>
-#include <ciel/core/config.hpp>
-#include <ciel/core/message.hpp>
-#include <cielmalloc/aal.hpp>
-#include <cielmalloc/config.hpp>
-#include <cielmalloc/pal/flag.hpp>
+#  include <ciel/core/alignment.hpp>
+#  include <ciel/core/config.hpp>
+#  include <ciel/core/message.hpp>
+#  include <cielmalloc/aal.hpp>
+#  include <cielmalloc/pal/flag.hpp>
 
-#include <CommonCrypto/CommonRandom.h>
-#include <bit>
-#include <cstddef>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <errno.h>
-#include <mach/mach_init.h>
-#include <mach/mach_vm.h>
-#include <mach/vm_statistics.h>
-#include <mach/vm_types.h>
-#include <sys/mman.h>
-#include <unistd.h>
+#  include <CommonCrypto/CommonRandom.h>
+#  include <bit>
+#  include <cstddef>
+#  include <cstdint>
+#  include <cstdio>
+#  include <cstdlib>
+#  include <cstring>
+#  include <errno.h>
+#  include <mach/mach_init.h>
+#  include <mach/mach_vm.h>
+#  include <mach/vm_statistics.h>
+#  include <mach/vm_types.h>
+#  include <sys/mman.h>
+#  include <unistd.h>
 
 namespace cielmalloc {
 
-struct pal {
+struct pal_impl {
     static constexpr uint64_t pal_features = AlignedAllocation | LazyCommit | Entropy;
 
     static constexpr size_t page_size = (aal::aal_name == ARM) ? 0x4000 : 0x1000;
@@ -37,23 +34,23 @@ struct pal {
     static constexpr size_t minimum_alloc_size = page_size;
 
     static constexpr int PALAnonDefaultID          = 241;
-    static constexpr int anonymous_memory_fd       = int(VM_MAKE_TAG(uint32_t(PALAnonDefaultID)));
-    static constexpr int default_mach_vm_map_flags = int(VM_MAKE_TAG(uint32_t(PALAnonDefaultID)));
+    static constexpr int anonymous_memory_fd       = static_cast<int>(VM_MAKE_TAG(uint32_t(PALAnonDefaultID)));
+    static constexpr int default_mach_vm_map_flags = static_cast<int>(VM_MAKE_TAG(uint32_t(PALAnonDefaultID)));
 
     CIEL_NODISCARD static void* reserve(size_t size) noexcept {
         CIEL_ASSERT(ciel::is_pow2(size));
         CIEL_ASSERT(size >= minimum_alloc_size);
 
-        mach_vm_offset_t mask = size - 1;
+        const mach_vm_offset_t mask = size - 1;
 
-        int flags = VM_FLAGS_ANYWHERE | default_mach_vm_map_flags;
+        const int flags = VM_FLAGS_ANYWHERE | default_mach_vm_map_flags;
 
         mach_vm_address_t addr = 0;
 
-        vm_prot_t prot = VM_PROT_NONE;
+        const vm_prot_t prot = VM_PROT_NONE;
 
-        kern_return_t kr = mach_vm_map(mach_task_self(), &addr, size, mask, flags, MEMORY_OBJECT_NULL, 0, TRUE, prot,
-                                       VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_COPY);
+        const kern_return_t kr = mach_vm_map(mach_task_self(), &addr, size, mask, flags, MEMORY_OBJECT_NULL, 0, TRUE,
+                                             prot, VM_PROT_READ | VM_PROT_WRITE, VM_INHERIT_COPY);
 
         if CIEL_UNLIKELY (kr != KERN_SUCCESS) {
             return nullptr;
@@ -68,7 +65,7 @@ struct pal {
         CIEL_ASSERT(ciel::is_aligned(p, page_size));
         CIEL_ASSERT(ciel::is_aligned(p, size));
 
-        ciel::keep_errno ke;
+        const ciel::keep_errno ke;
 
         if constexpr (NeedZeroMem == YesZero) {
             void* r =
@@ -95,10 +92,10 @@ struct pal {
         CIEL_ASSERT(ciel::is_aligned(p, page_size));
         CIEL_ASSERT(ciel::is_aligned(p, size));
 
-#ifdef CIEL_IS_DEBUGGING
+#  ifdef CIEL_IS_DEBUGGING
         // We need to make sure decommitted size is no less than initially committed size.
         std::memset(p, 0b10101010, size);
-#endif
+#  endif
 
         while (madvise(p, size, MADV_FREE_REUSABLE) == -1 && errno == EAGAIN) {}
 
@@ -110,7 +107,7 @@ struct pal {
     }
 
     CIEL_NODISCARD static uint64_t get_entropy64() noexcept {
-        uint64_t result;
+        uint64_t result = 0;
 
         CIEL_ASSERT_M(CCRandomGenerateBytes(reinterpret_cast<void*>(&result), sizeof(result)) == kCCSuccess,
                       "Failed to get system randomness");
@@ -118,8 +115,10 @@ struct pal {
         return result;
     }
 
-}; // struct pal
+}; // struct pal_impl
 
 } // namespace cielmalloc
+
+#endif
 
 #endif // CIELMALLOC_PAL_APPLE_HPP_

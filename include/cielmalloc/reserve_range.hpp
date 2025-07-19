@@ -11,8 +11,8 @@ namespace cielmalloc {
 
 class reserve_range {
 public:
-    CIEL_NODISCARD void* alloc_range(size_t bit) noexcept {
-        return pal::reserve<false>(cielmalloc::one_at_bit(bit));
+    CIEL_NODISCARD void* alloc_range(size_t size) noexcept {
+        return pal::reserve(size);
     }
 
     void dealloc_range(void*, size_t) noexcept {}

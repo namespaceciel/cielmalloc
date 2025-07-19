@@ -15,7 +15,7 @@ clean:
 .PHONY: clean
 
 test:
-	cmake -S . -B $(BUILD_DIR) && \
+	cmake -S . -B $(BUILD_DIR) -DCMAKE_CXX_CLANG_TIDY="clang-tidy" && \
 	cmake --build $(BUILD_DIR) --target cielmalloc_test -j $(NUM_JOB) && \
 	$(BUILD_DIR)/test/cielmalloc_test
 .PHONY: test

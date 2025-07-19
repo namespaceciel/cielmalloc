@@ -1,38 +1,36 @@
 #ifndef CIELMALLOC_PAL_LINUX_HPP_
 #define CIELMALLOC_PAL_LINUX_HPP_
 
-#if !defined(__linux__)
-#  error "Unmatched platform"
-#endif
+#if defined(__linux__)
 
-#include <ciel/core/alignment.hpp>
-#include <ciel/core/config.hpp>
-#include <ciel/core/message.hpp>
-#include <cielmalloc/aal.hpp>
-#include <cielmalloc/pal/flag.hpp>
+#  include <ciel/core/alignment.hpp>
+#  include <ciel/core/config.hpp>
+#  include <ciel/core/message.hpp>
+#  include <cielmalloc/aal.hpp>
+#  include <cielmalloc/pal/flag.hpp>
 
-#include <sys/mman.h>
-#include <sys/prctl.h>
-#include <syscall.h>
+#  include <sys/mman.h>
+#  include <sys/prctl.h>
+#  include <syscall.h>
 
 namespace cielmalloc {
 
-struct pal {
+struct pal_impl {
     static constexpr uint64_t pal_features = AlignedAllocation | LazyCommit | Entropy;
 
     static constexpr size_t page_size =
-#if defined(PAGESIZE)
+#  if defined(PAGESIZE)
         ciel::max(aal::smallest_page_size, static_cast<size_t>(PAGESIZE));
-#else
+#  else
         aal::smallest_page_size;
-#endif
+#  endif
 
     static constexpr int madvise_free_flags =
-#if defined(MADV_FREE)
+#  if defined(MADV_FREE)
         MADV_FREE
-#else
+#  else
         MADV_DONTNEED
-#endif
+#  endif
         ;
 
     CIEL_NODISCARD static void* reserve(size_t size) noexcept {
@@ -71,10 +69,10 @@ struct pal {
 
         ciel::keep_errno ke;
 
-#ifdef CIEL_IS_DEBUGGING
+#  ifdef CIEL_IS_DEBUGGING
         // We need to make sure decommitted size is no less than initially committed size.
         std::memset(p, 0b10101010, size);
-#endif
+#  endif
 
         madvise(p, size, madvise_free_flags);
 
@@ -85,8 +83,10 @@ struct pal {
         std::memset(p, 0, size);
     }
 
-}; // struct pal
+}; // struct pal_impl
 
 } // namespace cielmalloc
+
+#endif
 
 #endif // CIELMALLOC_PAL_LINUX_HPP_

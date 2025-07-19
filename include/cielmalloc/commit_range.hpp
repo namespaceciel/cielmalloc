@@ -15,21 +15,21 @@ struct commit_range {
     public:
         using Base = ParentRange;
 
-        CIEL_NODISCARD void* alloc_range(size_t bit) noexcept {
-            void* ptr = Base::alloc_range(bit);
+        CIEL_NODISCARD void* alloc_range(size_t size) noexcept {
+            void* ptr = Base::alloc_range(size);
 
-            if (ptr && !pal::commit<NoZero>(ptr, cielmalloc::one_at_bit(bit))) {
-                Base::dealloc_range(ptr, bit);
+            if (ptr && !pal::commit<NoZero>(ptr, size)) {
+                Base::dealloc_range(ptr, size);
                 return nullptr;
             }
 
             return ptr;
         }
 
-        void dealloc_range(void* ptr, size_t bit) noexcept {
-            pal::decommit(ptr, bit);
+        void dealloc_range(void* ptr, size_t size) noexcept {
+            pal::decommit(ptr, size);
 
-            Base::dealloc_range(ptr, bit);
+            Base::dealloc_range(ptr, size);
         }
 
     }; // class type
