@@ -18,7 +18,10 @@ struct commit_range {
         CIEL_NODISCARD void* alloc_range(size_t bit) noexcept {
             void* ptr = Base::alloc_range(bit);
 
-            pal::commit(ptr, cielmalloc::one_at_bit(bit));
+            if (ptr && !pal::commit<NoZero>(ptr, cielmalloc::one_at_bit(bit))) {
+                Base::dealloc_range(ptr, bit);
+                return nullptr;
+            }
 
             return ptr;
         }
