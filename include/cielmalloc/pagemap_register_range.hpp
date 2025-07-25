@@ -25,22 +25,12 @@ struct pagemap_register_range {
             void* ptr = Base::alloc_range(size);
 
             if CIEL_UNLIKELY (ptr != nullptr && !Pagemap::get().register_range(ptr, size)) {
-                Base::dealloc_range(ptr, size);
                 ptr = nullptr;
             }
 
             CIELMALLOC_LOG("In pagemap_register_range::alloc_range, returned ptr: {}", ptr);
 
             return ptr;
-        }
-
-        void dealloc_range(void* ptr, size_t size) noexcept {
-            CIELMALLOC_LOG("In pagemap_register_range::dealloc_range, ptr: {}, size: {}", ptr, size);
-
-            CIEL_ASSERT(ptr != nullptr);
-            CIEL_ASSERT(ciel::is_pow2(size));
-
-            Base::dealloc_range(ptr, size);
         }
 
     }; // class type

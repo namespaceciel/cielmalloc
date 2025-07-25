@@ -24,15 +24,6 @@ public:
         return ptr;
     }
 
-    void dealloc_range(void* ptr, size_t size) noexcept {
-        CIELMALLOC_LOG("In reserve_range::dealloc_range, ptr: {}, size: {}", ptr, size);
-
-        CIEL_ASSERT(ptr != nullptr);
-        CIEL_ASSERT(ciel::is_pow2(size));
-
-        CIEL_UNUSED(ptr, size);
-    }
-
 }; // class reserve_range
 
 } // namespace cielmalloc
