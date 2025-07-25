@@ -16,25 +16,21 @@ namespace cielmalloc {
 
 template<class OS>
 struct pal_posix {
-    template<class T, class = void>
-    struct DefaultMMAPFlags {
-        static constexpr int flags = 0;
-    };
+    static constexpr int DefaultMMAPFlags() noexcept {
+        if constexpr (requires { OS::default_mmap_flags; }) {
+            return OS::default_mmap_flags;
+        }
 
-    template<class T>
-    struct DefaultMMAPFlags<T, decltype((void)T::default_mmap_flags)> {
-        static constexpr int flags = T::default_mmap_flags;
-    };
+        return 0;
+    }
 
-    template<class T, class = void>
-    struct AnonFD {
-        static constexpr int fd = -1;
-    };
+    static constexpr int AnonFD() noexcept {
+        if constexpr (requires { OS::anonymous_memory_fd; }) {
+            return OS::anonymous_memory_fd;
+        }
 
-    template<class T>
-    struct AnonFD<T, decltype((void)T::anonymous_memory_fd)> {
-        static constexpr int fd = T::anonymous_memory_fd;
-    };
+        return -1;
+    }
 
     static int extra_mmap_flags(bool) noexcept {
         return 0;
@@ -53,8 +49,7 @@ struct pal_posix {
         auto prot = PROT_NONE;
 
         void* p = mmap(nullptr, size, prot,
-                       MAP_PRIVATE | MAP_ANONYMOUS | DefaultMMAPFlags<OS>::flags | OS::extra_mmap_flags(false),
-                       AnonFD<OS>::fd, 0);
+                       MAP_PRIVATE | MAP_ANONYMOUS | DefaultMMAPFlags() | OS::extra_mmap_flags(false), AnonFD(), 0);
 
         if CIEL_LIKELY (p != MAP_FAILED) {
             return p;
@@ -135,7 +130,7 @@ struct pal_posix {
             const ciel::keep_errno ke;
 
             void* r = mmap(p, size, PROT_READ | PROT_WRITE,
-                           MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED | DefaultMMAPFlags<OS>::flags, AnonFD<OS>::fd, 0);
+                           MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED | DefaultMMAPFlags(), AnonFD(), 0);
 
             if (r != MAP_FAILED) {
                 return;
