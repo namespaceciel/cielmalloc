@@ -18,8 +18,6 @@ struct pagemap_register_range {
         using Base = ParentRange;
 
         CIEL_NODISCARD void* alloc_range(size_t size) noexcept {
-            CIELMALLOC_LOG("In pagemap_register_range::alloc_range, size: {}", size);
-
             CIEL_ASSERT(ciel::is_pow2(size));
 
             void* ptr = Base::alloc_range(size);
@@ -27,8 +25,6 @@ struct pagemap_register_range {
             if CIEL_UNLIKELY (ptr != nullptr && !Pagemap::get().register_range(ptr, size)) {
                 ptr = nullptr;
             }
-
-            CIELMALLOC_LOG("In pagemap_register_range::alloc_range, returned ptr: {}", ptr);
 
             return ptr;
         }

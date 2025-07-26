@@ -17,8 +17,6 @@ struct commit_range {
         using Base = ParentRange;
 
         CIEL_NODISCARD void* alloc_range(size_t size) noexcept {
-            CIELMALLOC_LOG("In commit_range::alloc_range, size: {}", size);
-
             CIEL_ASSERT(ciel::is_pow2(size));
 
             void* ptr = Base::alloc_range(size);
@@ -28,14 +26,10 @@ struct commit_range {
                 ptr = nullptr;
             }
 
-            CIELMALLOC_LOG("In commit_range::alloc_range, returned ptr: {}", ptr);
-
             return ptr;
         }
 
         void dealloc_range(void* ptr, size_t size) noexcept {
-            CIELMALLOC_LOG("In commit_range::dealloc_range, ptr: {}, size: {}", ptr, size);
-
             CIEL_ASSERT(ptr != nullptr);
             CIEL_ASSERT(ciel::is_pow2(size));
 
