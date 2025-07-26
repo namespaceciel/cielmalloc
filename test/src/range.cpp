@@ -11,6 +11,7 @@
 #include <cielmalloc/pagemap_register_range.hpp>
 #include <cielmalloc/reserve_range.hpp>
 #include <cielmalloc/small_buddy_range.hpp>
+#include <cielmalloc/stats_range.hpp>
 
 #include <cstddef>
 #include <functional>
@@ -22,7 +23,7 @@ using namespace cielmalloc;
 
 TEST(range, all) {
     using Range = ciel::pipe<reserve_range, pagemap_register_range, large_buddy_range, log_range, lock_range,
-                             commit_range, small_buddy_range>;
+                             commit_range, stats_range, small_buddy_range>;
     Range range;
 
     ciel::inplace_vector<std::thread, 32> threads;
